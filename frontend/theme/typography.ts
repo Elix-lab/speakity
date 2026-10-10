@@ -219,6 +219,88 @@ export const textStyles = {
     fontSize: 11,
     color: colors.ink,
   },
+
+  // ---- Talk ----
+  // .status (Talk): display 24px / 700, letter-spacing -.005em
+  status: {
+    fontFamily: fonts.display[700],
+    fontSize: 24,
+    letterSpacing: em(-0.005, 24),
+    textAlign: 'center',
+    color: colors.ink,
+  },
+  // .timer: display 17px / 600, tabular-nums
+  timer: {
+    fontFamily: fonts.display[600],
+    fontSize: 17,
+    fontVariant: ['tabular-nums'],
+    color: colors.ink,
+  },
+  // .text-toggle: display 16px / 600, underline
+  link: {
+    fontFamily: fonts.display[600],
+    fontSize: 16,
+    textDecorationLine: 'underline',
+    color: colors.ink,
+  },
+  // .chat-bubble: 15px / 600, line-height 1.35
+  chatBubble: {
+    fontFamily: fonts.body[600],
+    fontSize: 15,
+    lineHeight: 15 * 1.35,
+    color: colors.ink,
+  },
+  // .chat-empty: 14px / 600, muted
+  chatEmpty: {
+    fontFamily: fonts.body[600],
+    fontSize: 14,
+    textAlign: 'center',
+    color: colors.muted,
+  },
+  // <b> inside .challenge-toggle: body 16px bold
+  strong: {
+    fontFamily: fonts.body[700],
+    fontSize: 16,
+    color: colors.ink,
+  },
+
+  // ---- Sentence card (.insight) ----
+  // .insight .said: 16px / 600, muted
+  said: {
+    fontFamily: fonts.body[600],
+    fontSize: 16,
+    color: colors.muted,
+  },
+  // .insight .better: display 21px / 600, letter-spacing -.005em
+  better: {
+    fontFamily: fonts.display[600],
+    fontSize: 21,
+    letterSpacing: em(-0.005, 21),
+    color: colors.ink,
+  },
+  // .ipa small: 12px / 700, opacity .7
+  ipaLabel: {
+    fontFamily: fonts.body[700],
+    fontSize: 12,
+    opacity: 0.7,
+    color: colors.ink,
+  },
+  // .ipa span: 17px / 600, line-height 1.35. The prototype uses a system
+  // font stack here ("Noto Sans","Segoe UI"…) for IPA glyph coverage, so
+  // no custom family — the platform font has the IPA characters.
+  ipa: {
+    fontSize: 17,
+    fontWeight: '600',
+    lineHeight: 17 * 1.35,
+    color: colors.ink,
+  },
+  // .insight .why: 14px / 600, muted, line-height 1.4
+  why: {
+    fontFamily: fonts.body[600],
+    fontSize: 14,
+    lineHeight: 14 * 1.4,
+    color: colors.muted,
+  },
 } as const satisfies Record<string, TextStyle>;
 
 export type TextVariant = keyof typeof textStyles;

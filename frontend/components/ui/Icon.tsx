@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import Svg, { Path, Rect } from 'react-native-svg';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { colors, type ColorToken } from '@/theme';
 
@@ -8,7 +8,19 @@ import { colors, type ColorToken } from '@/theme';
  * prototype defaults: 24 viewBox, round caps/joins, stroke 2.6 unless the
  * prototype sets another width for that icon.
  */
-export type IconName = 'flame' | 'mic' | 'chev' | 'check' | 'x' | 'home' | 'cards' | 'plus' | 'play' | 'pause';
+export type IconName =
+  | 'flame'
+  | 'mic'
+  | 'chev'
+  | 'check'
+  | 'x'
+  | 'home'
+  | 'cards'
+  | 'plus'
+  | 'play'
+  | 'pause'
+  | 'eye'
+  | 'eyeOff';
 
 type IconProps = {
   name: IconName;
@@ -74,6 +86,18 @@ const paths: Record<Exclude<IconName, 'flame'>, ReactNode> = {
   ),
   plus: <Path d="M12 5v14M5 12h14" />,
   play: <Path d="M7 4l13 8-13 8z" />,
+  eye: (
+    <>
+      <Path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+      <Circle cx="12" cy="12" r="3" />
+    </>
+  ),
+  eyeOff: (
+    <>
+      <Path d="M3 3l18 18" />
+      <Path d="M10.6 5.1A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.3 4.2M6.5 6.6A17 17 0 0 0 2 12s3.6 7 10 7c1.5 0 2.8-.4 4-.9" />
+    </>
+  ),
   pause: (
     <>
       <Rect x="6" y="4" width="4" height="16" rx="1.5" />

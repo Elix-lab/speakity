@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import {
   Animated,
   Pressable,
@@ -42,6 +42,10 @@ type PressableStickerProps = BaseProps &
   Omit<PressableProps, 'style' | 'children'> & {
     /** How far the face sinks on press. Defaults to the shadow offset. */
     pressTravel?: number;
+    /** Stay sunk in (pressed look, no shadow) until set back to false — a toggle that is "on". */
+    held?: boolean;
+    /** Keep the pop shadow while disabled (default: disabled drops it, like .btn:disabled). */
+    shadowWhenDisabled?: boolean;
   };
 
 /**
@@ -57,14 +61,16 @@ export function PressableSticker({
   containerStyle,
   children,
   pressTravel,
+  held = false,
+  shadowWhenDisabled = false,
   disabled,
   onPressIn,
   onPressOut,
   ...pressableProps
 }: PressableStickerProps) {
-  const offset = pop && !disabled ? popSizes[pop] : 0;
+  const offset = pop && (!disabled || shadowWhenDisabled) ? popSizes[pop] : 0;
   const travel = pressTravel ?? offset;
-  const pressed = useRef(new Animated.Value(0)).current;
+  const pressed = useRef(new Animated.Value(held ? 1 : 0)).current;
 
   const animateTo = (toValue: 0 | 1) =>
     Animated.timing(pressed, {
@@ -72,6 +78,20 @@ export function PressableSticker({
       duration: motion.press.duration,
       useNativeDriver: true,
     }).start();
+
+  // While held the sunk look is static (below). On release, start from the
+  // sunk position and pop back out over the normal press transition.
+  useEffect(() => {
+    if (held) {
+      pressed.setValue(1);
+      return;
+    }
+    Animated.timing(pressed, {
+      toValue: 0,
+      duration: motion.press.duration,
+      useNativeDriver: true,
+    }).start();
+  }, [held, pressed]);
 
   return (
     <Pressable
@@ -82,11 +102,11 @@ export function PressableSticker({
         onPressIn?.(e);
       }}
       onPressOut={(e) => {
-        animateTo(0);
+        if (!held) animateTo(0);
         onPressOut?.(e);
       }}
       style={[tilt && { transform: [{ rotate: `${tilts[tilt]}deg` }] }, containerStyle]}>
-      {offset > 0 && (
+      {offset > 0 && !held && (
         <Animated.View
           style={[
             StyleSheet.absoluteFill,
@@ -100,10 +120,12 @@ export function PressableSticker({
           { borderRadius: radius },
           style,
           {
-            transform: [
-              { translateX: Animated.multiply(pressed, travel) },
-              { translateY: Animated.multiply(pressed, travel) },
-            ],
+            transform: held
+              ? [{ translateX: travel }, { translateY: travel }]
+              : [
+                  { translateX: Animated.multiply(pressed, travel) },
+                  { translateY: Animated.multiply(pressed, travel) },
+                ],
           },
         ]}>
         {children}

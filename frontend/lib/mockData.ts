@@ -83,3 +83,17 @@ export const mockCards: Flashcard[] = [
     dueAt: daysAgo(-4),
   },
 ];
+
+// Talk script from prototype.html (SCRIPT). Mia's lines are her replies;
+// "you" lines stand in for what cloud STT would transcribe.
+export const mockMiaLines = [
+  'Hi Ana! What have you been up to today?',
+  'Sounds like a lot! Tell me more about that.',
+  'I love that. Tell me more about the beach. What do you do there?',
+];
+
+export const mockUserLines = [
+  "Honestly, it's been busy. I go to the office yesterday and I'm going to the office tomorrow too.",
+  'I would sleep in, walk on the beach with my dog. I have 25 years, so I want to enjoy it!',
+  "I've been meaning to try that new place near the pier.",
+];

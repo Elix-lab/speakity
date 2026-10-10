@@ -60,3 +60,24 @@ export type WeekStats = {
   minutesPerDay: number[];
   conversations: number;
 };
+
+/**
+ * Talk screen state:
+ * - speaking:  Mia is talking (TTS) — mic disabled
+ * - idle:      nobody is talking — mic enabled, tap to start your turn
+ * - listening: you are talking (recording) — tap the mic to end your turn
+ * - thinking:  transcribing + generating Mia's reply — mic disabled
+ * - muted:     conversation paused — mic disabled
+ */
+export type TalkMode = 'speaking' | 'idle' | 'listening' | 'thinking' | 'muted';
+
+export type TalkLine = {
+  who: 'mia' | 'you';
+  text: string;
+};
+
+/** A recorded user turn, ready to upload for cloud transcription. */
+export type RecordedTurn = {
+  uri: string | null;
+  durationMs: number;
+};

@@ -1,5 +1,20 @@
-import { mockCards, mockConversations, mockToday, mockWeek } from './mockData';
-import type { ConversationSummary, Flashcard, Rating, TodaySummary, WeekStats } from './types';
+import {
+  mockCards,
+  mockConversations,
+  mockMiaLines,
+  mockToday,
+  mockUserLines,
+  mockWeek,
+} from './mockData';
+import type {
+  ConversationSummary,
+  Flashcard,
+  Rating,
+  RecordedTurn,
+  TalkLine,
+  TodaySummary,
+  WeekStats,
+} from './types';
 
 /**
  * Typed calls to the backend. Mocked for now — keep these names and
@@ -37,3 +52,48 @@ export async function rateCard(cardId: string, rating: Rating): Promise<void> {
   await delay();
   console.log('[mock] rateCard', cardId, rating);
 }
+
+/** Today's challenge: up to 2 sentences currently in "learning". */
+export async function getChallengeCards(): Promise<Flashcard[]> {
+  await delay();
+  return mockCards.filter((card) => card.status === 'learning').slice(0, 2);
+}
+
+// ---- Conversation pipeline (turn-based, see CLAUDE.md) ----
+
+/** POST /conversations — opens a conversation, returns Mia's greeting. */
+export async function startConversation(): Promise<{ id: string; greeting: string }> {
+  await delay();
+  return { id: `mock-${Date.now()}`, greeting: mockMiaLines[0] };
+}
+
+/**
+ * POST /conversations/:id/transcribe — cloud STT of one recorded turn.
+ * Never device STT: it autocorrects, and we need the mistakes as said.
+ */
+export async function transcribeTurn(conversationId: string, turn: RecordedTurn): Promise<string> {
+  await delay(700);
+  const yourTurns = turnCounter.get(conversationId) ?? 0;
+  turnCounter.set(conversationId, yourTurns + 1);
+  return mockUserLines[yourTurns % mockUserLines.length];
+}
+
+/** POST /conversations/:id/reply — cheap text model generates Mia's next line. */
+export async function getMiaReply(conversationId: string, history: TalkLine[]): Promise<string> {
+  await delay(800);
+  const miaTurns = history.filter((l) => l.who === 'mia').length;
+  return mockMiaLines[miaTurns % mockMiaLines.length];
+}
+
+/** POST /conversations/:id/end — triggers the end-to-end analysis. */
+export async function endConversation(
+  conversationId: string,
+  transcript: TalkLine[],
+  durationSec: number,
+): Promise<void> {
+  await delay();
+  console.log('[mock] endConversation', conversationId, transcript.length, 'lines', durationSec, 's');
+}
+
+// mock-only: which scripted user line comes next, per conversation
+const turnCounter = new Map<string, number>();

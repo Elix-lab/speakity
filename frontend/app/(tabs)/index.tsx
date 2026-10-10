@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -26,8 +27,8 @@ export default function HomeScreen() {
             big
             icon={<Icon name="mic" size={26} />}
             disabled={today?.talkLimitReached}
-            // TODO: navigate to the pre-talk screen once it exists
-            onPress={() => console.log('[todo] start talking')}
+            // TODO: go through the pre-talk "Today's challenge" screen once it exists
+            onPress={() => router.push('/talk')}
           />
           {today?.talkLimitReached && (
             <Text variant="small" style={styles.limitNote}>
