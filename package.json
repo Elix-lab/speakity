@@ -1,1 +1,11 @@
-{}
+{
+  "name": "speakity",
+  "private": true,
+  "packageManager": "pnpm@11.1.2",
+  "scripts": {
+    "frontend": "pnpm --filter ./frontend",
+    "start": "pnpm --filter ./frontend start",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint"
+  }
+}

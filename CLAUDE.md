@@ -23,6 +23,8 @@ cambiarlas.
 - **Auth**: BetterAuth, con su adapter de Drizzle.
 - **Monorepo**: un solo repo, `frontend/` y `backend/` como carpetas. Elegido
   por ser un desarrollador solo — el monorepo separado en equipos no aplica acá.
+- **Package manager**: pnpm (workspace en la raíz: `pnpm-workspace.yaml` +
+  un solo `pnpm-lock.yaml`). Nunca usar npm/npx/yarn — usar `pnpm` / `pnpm dlx`.
 
 ## Estructura de carpetas
 
