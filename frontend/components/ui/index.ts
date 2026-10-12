@@ -1,6 +1,7 @@
 export * from './Button';
 export * from './Card';
 export * from './Icon';
+export * from './IpaBox';
 export * from './Logo';
 export * from './Mascot';
 export * from './Pill';

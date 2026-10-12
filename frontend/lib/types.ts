@@ -31,6 +31,36 @@ export type Flashcard = {
   dueAt: string; // ISO date
 };
 
+/** What the backend answers after a rating. */
+export type ReviewResult = {
+  status: CardStatus;
+  /**
+   * False = first look and not Easy: the card comes back once more at the
+   * end of this session. True = done for today (counts toward the daily cap).
+   */
+  settled: boolean;
+};
+
+/** How many of the user's cards are in each state (Practice progress card). */
+export type CardStats = Record<CardStatus, number>;
+
+/** One mistake category on Practice ("What you're improving"). */
+export type FocusArea = CardStats & {
+  category: string;
+  total: number;
+};
+
+/** Everything below the header on the Practice tab. */
+export type PracticeOverview = {
+  stats: CardStats;
+  /** Most still-to-learn first. */
+  focusAreas: FocusArea[];
+  /** Cards flagged `.win` by the AI (said right in a later conversation), up to 3. */
+  corrected: Flashcard[];
+  /** Cards the user rated into Mastered today, up to 3. */
+  masteredToday: Flashcard[];
+};
+
 export type TodaySummary = {
   streakDays: number;
   minutesToday: number;

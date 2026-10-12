@@ -36,4 +36,5 @@ export const sizes = {
   micSmall: 40, // .mic-btn-sm
   progress: 14, // .progress height
   pin: 16, // .win-hero::before / .practice-card::before
+  flip: 440, // .flip height (flashcard)
 } as const;

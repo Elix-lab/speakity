@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
 import { colors, motion } from '@/theme';
@@ -55,7 +55,7 @@ function Bar({
   phase: number;
   active: boolean;
 }) {
-  const t = useRef(new Animated.Value(0)).current;
+  const [t] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (!active) {

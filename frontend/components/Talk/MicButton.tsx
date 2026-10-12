@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, StyleSheet } from 'react-native';
 
 import { Icon, PressableSticker } from '@/components/ui';
@@ -27,7 +27,7 @@ type MicButtonProps = {
  */
 export function MicButton({ onPress, disabled, small = false, label, active = false }: MicButtonProps) {
   const size = small ? sizes.micSmall : sizes.mic;
-  const opacity = useRef(new Animated.Value(disabled ? 0.5 : 1)).current;
+  const [opacity] = useState(() => new Animated.Value(disabled ? 0.5 : 1));
 
   useEffect(() => {
     // transition: opacity .2s

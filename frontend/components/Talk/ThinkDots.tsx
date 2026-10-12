@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
 import { colors, motion } from '@/theme';
@@ -25,7 +25,7 @@ export function ThinkDots() {
 }
 
 function Dot({ delay }: { delay: number }) {
-  const t = useRef(new Animated.Value(0)).current;
+  const [t] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     const segment = duration * 0.4; // 0→40% and 40→80%

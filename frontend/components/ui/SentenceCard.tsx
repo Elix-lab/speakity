@@ -1,13 +1,16 @@
+import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import type { CardType, Flashcard } from '@/lib/types';
 import { borders, colors, radii, type ColorToken } from '@/theme';
 
+import { IpaBox } from './IpaBox';
 import { Pill } from './Pill';
 import { Sticker } from './Sticker';
 import { Text } from './Text';
 
-const TAG: Record<CardType, { label: string; bg: ColorToken }> = {
+/** Card type → .tag label and color. */
+export const CARD_TAG: Record<CardType, { label: string; bg: ColorToken }> = {
   grammar: { label: 'Grammar', bg: 'coral' }, // .tag.t-grammar
   natural: { label: 'More natural', bg: 'sea' }, // .tag.t-natural
 };
@@ -16,6 +19,8 @@ type SentenceCardProps = {
   card: Flashcard;
   showIpa?: boolean;
   showWhy?: boolean;
+  /** Extra content at the bottom (e.g. a WinLine on Practice). */
+  footer?: ReactNode;
 };
 
 /**
@@ -23,8 +28,8 @@ type SentenceCardProps = {
  * Before-you-talk, the in-talk challenge, the library). Flashcards in
  * review keep their own flip-card design.
  */
-export function SentenceCard({ card, showIpa = false, showWhy = false }: SentenceCardProps) {
-  const tag = TAG[card.type];
+export function SentenceCard({ card, showIpa = false, showWhy = false, footer }: SentenceCardProps) {
+  const tag = CARD_TAG[card.type];
   return (
     <Sticker pop="md" radius={radii.insight} style={styles.face} containerStyle={styles.container}>
       <Pill size="tag" label={tag.label} background={tag.bg} />
@@ -39,19 +44,13 @@ export function SentenceCard({ card, showIpa = false, showWhy = false }: Sentenc
       <View style={styles.better}>
         <Text variant="better">{card.better}</Text>
       </View>
-      {showIpa && (
-        <View style={styles.ipa}>
-          <Text variant="ipaLabel">Pronunciation (US)</Text>
-          <Text variant="ipa" style={styles.ipaText}>
-            {card.ipa}
-          </Text>
-        </View>
-      )}
+      {showIpa && <IpaBox ipa={card.ipa} />}
       {showWhy && (
         <Text variant="why" style={styles.why}>
           {card.why}
         </Text>
       )}
+      {footer}
     </Sticker>
   );
 }
@@ -80,16 +79,5 @@ const styles = StyleSheet.create({
     borderWidth: borders.chip,
     borderColor: colors.ink,
   },
-  // .ipa: margin-top 12, radius 14, padding 9px 14px, 1px border
-  ipa: {
-    marginTop: 12,
-    backgroundColor: colors.seaTint,
-    borderRadius: 14,
-    paddingVertical: 9,
-    paddingHorizontal: 14,
-    borderWidth: borders.tag,
-    borderColor: colors.ink,
-  },
-  ipaText: { marginTop: 2 },
   why: { marginTop: 10 },
 });

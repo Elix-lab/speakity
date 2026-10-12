@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   Animated,
   Pressable,
@@ -70,7 +70,7 @@ export function PressableSticker({
 }: PressableStickerProps) {
   const offset = pop && (!disabled || shadowWhenDisabled) ? popSizes[pop] : 0;
   const travel = pressTravel ?? offset;
-  const pressed = useRef(new Animated.Value(held ? 1 : 0)).current;
+  const [pressed] = useState(() => new Animated.Value(held ? 1 : 0));
 
   const animateTo = (toValue: 0 | 1) =>
     Animated.timing(pressed, {

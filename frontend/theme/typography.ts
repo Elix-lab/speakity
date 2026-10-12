@@ -278,6 +278,111 @@ export const textStyles = {
     letterSpacing: em(-0.005, 21),
     color: colors.ink,
   },
+  // ---- Practice ----
+  // .pr-head h1: h1 at 26px, on the ink header
+  practiceTitle: {
+    fontFamily: fonts.display[800],
+    fontSize: 26,
+    letterSpacing: em(-0.01, 26),
+    color: colors.onDark,
+  },
+  // .pr-head p: 14px / 600, opacity .9
+  practiceLede: {
+    fontFamily: fonts.body[600],
+    fontSize: 14,
+    opacity: 0.9,
+    color: colors.onDark,
+  },
+  // .pc-num-of: 22px inside .pc-num (display 600), muted
+  heroOf: {
+    fontFamily: fonts.display[600],
+    fontSize: 22,
+    color: colors.muted,
+  },
+  // .pc-sub: hand 19px / 600, muted
+  hand: {
+    fontFamily: fonts.hand[600],
+    fontSize: 19,
+    color: colors.muted,
+  },
+  // .legend: 14px / 600, muted (b inside: display 600, ink)
+  legend: {
+    fontFamily: fonts.body[600],
+    fontSize: 14,
+    color: colors.muted,
+  },
+  legendCount: {
+    fontFamily: fonts.display[600],
+    fontSize: 14,
+    color: colors.ink,
+  },
+  // .focus-name: display 18px / 600
+  focusName: {
+    fontFamily: fonts.display[600],
+    fontSize: 18,
+    color: colors.ink,
+  },
+  // .see-all.quiet: display (from .see-all) 13px / 700, muted
+  seeAllQuiet: {
+    fontFamily: fonts.display[700],
+    fontSize: 13,
+    color: colors.muted,
+  },
+  // .win-line: 13px / 700, ok-x (= ink)
+  winLine: {
+    fontFamily: fonts.body[700],
+    fontSize: 13,
+    color: colors.ink,
+  },
+  // .count (review progress): display 16px / 600
+  count: {
+    fontFamily: fonts.display[600],
+    fontSize: 16,
+    textAlign: 'right',
+    color: colors.ink,
+  },
+  // .pass-step: 13px / 700, muted (b inside: display 700, ink)
+  passStep: {
+    fontFamily: fonts.body[700],
+    fontSize: 13,
+    color: colors.muted,
+  },
+  passCount: {
+    fontFamily: fonts.display[700],
+    fontSize: 13,
+    color: colors.ink,
+  },
+  // .face .lab: 15px / 700, muted
+  faceLabel: {
+    fontFamily: fonts.body[700],
+    fontSize: 15,
+    color: colors.muted,
+  },
+  // .ask-row .bubble: .bubble (hand 700, lh 1.35) at 15px
+  bubbleSmall: {
+    fontFamily: fonts.hand[700],
+    fontSize: 15,
+    lineHeight: 15 * 1.35,
+    color: colors.ink,
+  },
+  // .first: 13px / 600, muted
+  first: {
+    fontFamily: fonts.body[600],
+    fontSize: 13,
+    color: colors.muted,
+  },
+  // .rate: display 16px / 600 · .rate small: body 12px / 700
+  rate: {
+    fontFamily: fonts.display[600],
+    fontSize: 16,
+    color: colors.ink,
+  },
+  rateInterval: {
+    fontFamily: fonts.body[700],
+    fontSize: 12,
+    color: colors.ink,
+  },
+
   // .ipa small: 12px / 700, opacity .7
   ipaLabel: {
     fontFamily: fonts.body[700],

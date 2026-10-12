@@ -35,12 +35,14 @@ export default function TalkScreen() {
   const { mode, paused, lines, seconds, micDenied, onMicPress, togglePause, end } = useConversation();
   const [showText, setShowText] = useState(false);
   const [challenges, setChallenges] = useState<Flashcard[]>([]);
-  // Pausing keeps whatever pose Mia had.
-  const [pose, setPose] = useState<MiaPose>('think');
-
-  useEffect(() => {
+  // Pausing keeps whatever pose Mia had, so the pose follows the mode
+  // except while muted (updated during render, not in an effect).
+  const [pose, setPose] = useState<MiaPose>(mode === 'muted' ? 'think' : POSE[mode]);
+  const [poseMode, setPoseMode] = useState(mode);
+  if (mode !== poseMode) {
+    setPoseMode(mode);
     if (mode !== 'muted') setPose(POSE[mode]);
-  }, [mode]);
+  }
 
   useEffect(() => {
     getChallengeCards().then(setChallenges);

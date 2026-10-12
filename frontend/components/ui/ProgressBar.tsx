@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { borders, colors, motion, radii, sizes, type ColorToken } from '@/theme';
@@ -15,7 +15,7 @@ const [x1, y1, x2, y2] = motion.progress.bezier;
 /** .progress — 14px track, white, 2px ink border, leaf fill. */
 export function ProgressBar({ value, color = 'leaf', style }: ProgressBarProps) {
   const clamped = Math.max(0, Math.min(1, value));
-  const width = useRef(new Animated.Value(clamped)).current;
+  const [width] = useState(() => new Animated.Value(clamped));
 
   useEffect(() => {
     Animated.timing(width, {

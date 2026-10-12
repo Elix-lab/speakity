@@ -20,7 +20,8 @@ export type IconName =
   | 'play'
   | 'pause'
   | 'eye'
-  | 'eyeOff';
+  | 'eyeOff'
+  | 'sound';
 
 type IconProps = {
   name: IconName;
@@ -96,6 +97,12 @@ const paths: Record<Exclude<IconName, 'flame'>, ReactNode> = {
     <>
       <Path d="M3 3l18 18" />
       <Path d="M10.6 5.1A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.3 4.2M6.5 6.6A17 17 0 0 0 2 12s3.6 7 10 7c1.5 0 2.8-.4 4-.9" />
+    </>
+  ),
+  sound: (
+    <>
+      <Path d="M4 9v6h4l5 4V5L8 9z" />
+      <Path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />
     </>
   ),
   pause: (

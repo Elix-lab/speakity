@@ -36,6 +36,8 @@ export const motion = {
   miniFade: { duration: 300 },
   // mascot idle loop (.due-card .mia, .pc-mia) — 3.4s ease-in-out
   idle: { duration: 3400 },
+  // .done-mia — chat 1s ease-in-out, 3 times
+  chat: { duration: 1000, iterations: 3 },
   // confetti — 2.6s ease-in
   confetti: { duration: 2600 },
 } as const;
