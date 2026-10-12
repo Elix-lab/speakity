@@ -8,7 +8,7 @@ const [a, b, c, d] = motion.easeInOut;
 const easeInOut = Easing.bezier(a, b, c, d);
 
 /**
- * .think-dots — replaces the waveform while Mia is thinking (network
+ * .think-dots — replaces the waveform while Monty is thinking (network
  * round trip, no live audio to show).
  * keyframes thinkDot (1.3s ease-in-out infinite, delays 0/.18/.36s):
  *   0%, 80%, 100% → opacity .3, y 0

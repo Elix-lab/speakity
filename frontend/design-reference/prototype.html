@@ -114,7 +114,7 @@ p{margin:0}
 .round.on{background:var(--coral)}
 
 /* Mascot animations */
-.mia{transform-origin:50% 100%}
+.monty{transform-origin:50% 100%}
 @keyframes idle{0%,100%{transform:rotate(-2deg) translateY(0)}50%{transform:rotate(2deg) translateY(-4px)}}
 @keyframes chat{0%,100%{transform:translateY(0) scale(1,1)}30%{transform:translateY(-12px) scale(.98,1.03)}60%{transform:translateY(0) scale(1.04,.96)}}
 @keyframes lean{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(4deg) translateY(-3px)}}
@@ -178,8 +178,8 @@ p{margin:0}
 
 /* Focus view: one big mascot, centered */
 .focus-stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:0 20px}
-.mia-big{width:230px}
-#talk[data-mode="muted"] .mia-big{opacity:.55}
+.monty-big{width:230px}
+#talk[data-mode="muted"] .monty-big{opacity:.55}
 
 .status{text-align:center;font-family:var(--display);font-size:24px;font-weight:700;letter-spacing:-.005em}
 .waves{display:flex;align-items:center;justify-content:center;gap:4px;height:40px}
@@ -208,15 +208,15 @@ p{margin:0}
 .bubble-row{display:flex}
 .bubble-row.you{justify-content:flex-end}
 .chat-bubble{max-width:82%;padding:10px 14px;border-radius:18px;font-size:15px;font-weight:600;line-height:1.35;border:2px solid var(--ink)}
-.bubble-row.mia .chat-bubble{background:var(--leaf-t);border-bottom-left-radius:6px}
+.bubble-row.monty .chat-bubble{background:var(--leaf-t);border-bottom-left-radius:6px}
 .bubble-row.you .chat-bubble{background:var(--surface);border-bottom-right-radius:6px}
 .chat-empty{color:var(--muted);font-weight:600;font-size:14px;text-align:center;margin-top:20px}
 
 /* Small dock mascot shown only in chat view, like a shrunken voice orb */
 .mini-dock{display:none;align-items:center;justify-content:center;gap:16px;padding:6px 0 2px}
-.mia-mini{width:56px;transition:opacity .3s}
+.monty-mini{width:56px;transition:opacity .3s}
 .mic-btn-sm{width:40px;height:40px;margin-top:0}
-#talk[data-mode="muted"] .mia-mini{opacity:.4}
+#talk[data-mode="muted"] .monty-mini{opacity:.4}
 
 #talk.chat .focus-stage{display:none}
 #talk.chat .chat-stage{display:block}
@@ -283,7 +283,7 @@ p{margin:0}
 
 /* DONE */
 .center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 28px;gap:10px}
-.done-mia{width:220px;animation:chat 1s ease-in-out 3}
+.done-monty{width:220px;animation:chat 1s ease-in-out 3}
 .stats{display:flex;gap:10px;margin:14px 0 0;width:100%}
 .stat{flex:1;border-radius:14px;padding:12px 8px}
 .stat b{display:block;font-family:var(--display);font-size:28px;font-weight:700}
@@ -299,7 +299,7 @@ p{margin:0}
 .pr-scroll{padding-top:0}
 .pr-head{margin:0 -20px 22px;width:calc(100% + 40px)}
 .due-card{position:relative;border-radius:24px;padding:20px;min-height:160px;overflow:hidden}
-.due-card .mia{position:absolute;right:-6px;bottom:-10px;width:140px;animation:idle 3.4s ease-in-out infinite}
+.due-card .monty{position:absolute;right:-6px;bottom:-10px;width:140px;animation:idle 3.4s ease-in-out infinite}
 .due-body{position:relative;z-index:2;max-width:58%}
 .due-num{font-family:var(--display);font-size:60px;font-weight:700;line-height:1;letter-spacing:-.03em}
 .sec-row{display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 12px}
@@ -327,7 +327,7 @@ p{margin:0}
 .pc-num{font-family:var(--display);font-weight:600;font-size:44px;line-height:1;letter-spacing:-.02em;margin-top:10px}
 .pc-num-of{font-size:22px;color:var(--muted)}
 .pc-sub{font-family:var(--hand);font-weight:600;font-size:19px;color:var(--muted);margin-top:0}
-.pc-mia{width:92px;flex:none;animation:idle 3.4s ease-in-out infinite}
+.pc-monty{width:92px;flex:none;animation:idle 3.4s ease-in-out infinite}
 .practice-cta{margin-top:22px}
 .cap{margin-top:12px;line-height:1.4}
 .focus-row+.focus-row{margin-top:16px;padding-top:16px;border-top:1.5px dashed var(--ink)}
@@ -642,7 +642,7 @@ const screens = {
       ${challenges.length ? `
       <div class="challenge-anchor">
         <button class="challenge-toggle" id="challengeToggle" data-a="toggleChallenge" aria-expanded="false">
-          <span class="grow"><b>Today's challenge</b><span class="small">Tap to see what Mia's listening for</span></span>
+          <span class="grow"><b>Today's challenge</b><span class="small">Tap to see what Monty's listening for</span></span>
           <span class="chev" id="challengeChev">${ICON.chev(18)}</span>
         </button>
         <div class="challenge-overlay" id="challengeOverlay" hidden>
@@ -653,8 +653,8 @@ const screens = {
       </div>` : ''}
 
       <div class="focus-stage" id="focusStage">
-        <img class="mia mia-big" id="miaBig" src="${TALK_POSE}" alt="">
-        <div class="status" id="status" role="status" aria-live="polite">Mia is speaking</div>
+        <img class="monty monty-big" id="montyBig" src="${TALK_POSE}" alt="">
+        <div class="status" id="status" role="status" aria-live="polite">Monty is speaking</div>
         <div class="waves" aria-hidden="true">${bars}</div>
         <div class="think-dots" aria-hidden="true"><i></i><i></i><i></i></div>
         <button class="mic-btn" id="micBtn" data-a="endTurn" aria-label="Done talking">${ICON.mic(26)}</button>
@@ -665,7 +665,7 @@ const screens = {
       </div>
 
       <div class="mini-dock" id="miniDock">
-        <img class="mia mia-mini" id="miaMini" src="${TALK_POSE}" alt="">
+        <img class="monty monty-mini" id="montyMini" src="${TALK_POSE}" alt="">
         <button class="mic-btn mic-btn-sm" data-a="endTurn" aria-label="Done talking">${ICON.mic(20)}</button>
       </div>
 
@@ -683,9 +683,9 @@ const screens = {
     return `
     <section class="screen p-summary enter">
       <div class="center">
-        <img class="done-mia mia" src="${RECAP_MASCOT}" alt="Mia">
+        <img class="done-monty monty" src="${RECAP_MASCOT}" alt="Monty">
         <h1>That's a wrap!</h1>
-        <p class="sub">Mia listened closely. Here's what she found.</p>
+        <p class="sub">Monty listened closely. Here's what he found.</p>
         <div class="stats">
           <div class="stat"><b style="color:var(--ok-x)">${winCount}</b><span>you got right</span></div>
           <div class="stat"><b style="color:var(--coral-x)">${workCount}</b><span>to practice</span></div>
@@ -806,7 +806,7 @@ const screens = {
     return `
     <section class="screen p-done enter">
       <div class="center">
-        <img class="done-mia mia" src="${RECAP_MASCOT}" alt="Mia celebrating">
+        <img class="done-monty monty" src="${RECAP_MASCOT}" alt="Monty celebrating">
         <h1>Nice work!</h1>
         <p class="sub">${s.total} sentences reviewed</p>
         <div class="stats">
@@ -841,7 +841,7 @@ const screens = {
               <div class="pc-num">${cnt.mastered}<span class="pc-num-of"> / ${state.cards.length}</span></div>
               <p class="pc-sub">sentences mastered</p>
             </div>
-            <img class="mia pc-mia" src="${n>0?ASK_MASCOT:MASCOT}" alt="">
+            <img class="monty pc-monty" src="${n>0?ASK_MASCOT:MASCOT}" alt="">
           </div>
           <div class="seg" style="margin-top:16px" role="img" aria-label="${cnt.new} new, ${cnt.learning} learning, ${cnt.mastered} mastered">
             ${['new','learning','mastered'].map(k=>cnt[k]?`<i class="seg-${k}" style="flex:${cnt[k]}"></i>`:'').join('')}
@@ -991,13 +991,13 @@ function updateTabs(active){
 
 /* ---------- Talk simulation ---------- */
 const SCRIPT = [
-  {m:'speaking', who:'mia', text:"Hi Ana! What have you been up to today?", d:3600},
+  {m:'speaking', who:'monty', text:"Hi Ana! What have you been up to today?", d:3600},
   {m:'listening',who:'you', text:"Honestly, it's been busy. I go to the office yesterday and I'm going to the office tomorrow too.", d:5200},
   {m:'thinking', d:1500},
-  {m:'speaking', who:'mia', text:"Sounds like a lot! Tell me more about that.", d:3800},
+  {m:'speaking', who:'monty', text:"Sounds like a lot! Tell me more about that.", d:3800},
   {m:'listening',who:'you', text:"I would sleep in, walk on the beach with my dog. I have 25 years, so I want to enjoy it!", d:5200},
   {m:'thinking', d:1500},
-  {m:'speaking', who:'mia', text:"I love that. Tell me more about the beach. What do you do there?", d:3800},
+  {m:'speaking', who:'monty', text:"I love that. Tell me more about the beach. What do you do there?", d:3800},
   {m:'listening',who:'you', text:"I've been meaning to try that new place near the pier.", d:4600},
   {m:'thinking', d:1400}
 ];
@@ -1044,12 +1044,12 @@ function setMode(step){
   root.dataset.mode = mode;
   const st = $('#status');
   if(st){
-    if(mode==='speaking') st.textContent = 'Mia is speaking';
+    if(mode==='speaking') st.textContent = 'Monty is speaking';
     if(mode==='listening') st.textContent = 'Your turn. Keep talking';
-    if(mode==='thinking') st.textContent = 'Mia is thinking';
+    if(mode==='thinking') st.textContent = 'Monty is thinking';
   }
   const pose = mode==='speaking' ? TALK_POSE : mode==='thinking' ? THINK_POSE : LISTEN_POSE;
-  swapPose($('#miaBig'), pose); swapPose($('#miaMini'), pose);
+  swapPose($('#montyBig'), pose); swapPose($('#montyMini'), pose);
   if(step.text) { state.lines.push({who:step.who,text:step.text}); paintTranscript(); }
 }
 let talkStepIndex = 0;

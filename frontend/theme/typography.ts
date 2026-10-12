@@ -36,7 +36,7 @@ export const fontAssets = {
 type FontName = keyof typeof fontAssets;
 
 /** --display (Baloo 2): headers, buttons, big numbers */
-/** --hand (Caveat): Mia's bubbles, handwritten subtitles */
+/** --hand (Caveat): Monty's bubbles, handwritten subtitles */
 /** --body (Nunito): body copy. Prototype body default weight is 500. */
 export const fonts = {
   display: { 600: 'Baloo2_600SemiBold', 700: 'Baloo2_700Bold', 800: 'Baloo2_800ExtraBold' },
@@ -123,7 +123,7 @@ export const textStyles = {
     letterSpacing: em(-0.01, 30),
     color: colors.ink,
   },
-  // .bubble (Mia): Caveat 19px / 700, line-height 1.35
+  // .bubble (Monty): Caveat 19px / 700, line-height 1.35
   bubble: {
     fontFamily: fonts.hand[700],
     fontSize: 19,
@@ -333,6 +333,41 @@ export const textStyles = {
     fontFamily: fonts.body[700],
     fontSize: 13,
     color: colors.ink,
+  },
+  // ---- All my sentences (library) ----
+  // .status pill: 12px / 700. Display font: the Talk .status rule earlier in
+  // the CSS sets font-family and this one only overrides size/weight.
+  statusPill: {
+    fontFamily: fonts.display[700],
+    fontSize: 12,
+    color: colors.ink,
+  },
+  // .fchip: display 13px / 700
+  filterChip: {
+    fontFamily: fonts.display[700],
+    fontSize: 13,
+    color: colors.ink,
+  },
+  // .date-range input: body 14px / 700
+  dateInput: {
+    fontFamily: fonts.body[700],
+    fontSize: 14,
+    color: colors.ink,
+  },
+  // .convo summary b: display 17px / 700, letter-spacing -.005em
+  sentenceTitle: {
+    fontFamily: fonts.display[700],
+    fontSize: 17,
+    letterSpacing: em(-0.005, 17),
+    color: colors.ink,
+  },
+  // .album-hint: 14px / 600, muted, line-height 1.4, centered
+  hint: {
+    fontFamily: fonts.body[600],
+    fontSize: 14,
+    lineHeight: 14 * 1.4,
+    textAlign: 'center',
+    color: colors.muted,
   },
   // .count (review progress): display 16px / 600
   count: {

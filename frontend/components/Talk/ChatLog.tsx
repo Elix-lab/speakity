@@ -21,7 +21,7 @@ export function ChatLog({ lines }: { lines: TalkLine[] }) {
       ) : (
         lines.map((line, i) => (
           <View key={i} style={[styles.row, line.who === 'you' && styles.rowYou]}>
-            <View style={[styles.bubble, line.who === 'mia' ? styles.mia : styles.you]}>
+            <View style={[styles.bubble, line.who === 'monty' ? styles.monty : styles.you]}>
               <Text variant="chatBubble">{line.text}</Text>
             </View>
           </View>
@@ -46,6 +46,6 @@ const styles = StyleSheet.create({
     borderWidth: borders.default,
     borderColor: colors.ink,
   },
-  mia: { backgroundColor: colors.leafTint, borderBottomLeftRadius: 6 },
+  monty: { backgroundColor: colors.leafTint, borderBottomLeftRadius: 6 },
   you: { backgroundColor: colors.surface, borderBottomRightRadius: 6 },
 });

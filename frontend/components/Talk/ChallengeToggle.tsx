@@ -23,7 +23,7 @@ export function ChallengeToggle({ cards }: { cards: Flashcard[] }) {
           {/* <b> + span.small are inline in the prototype, so they flow as one text */}
           <Text variant="strong" style={styles.grow}>
             Today&apos;s challenge{' '}
-            <Text variant="small">Tap to see what Mia&apos;s listening for</Text>
+            <Text variant="small">Tap to see what Monty&apos;s listening for</Text>
           </Text>
           {/* .chev rotates 90° when expanded */}
           <View style={open && styles.chevOpen}>

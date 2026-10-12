@@ -11,7 +11,7 @@ import { useHomeData } from '@/hooks/useHomeData';
 import { colors, spacing } from '@/theme';
 
 export default function HomeScreen() {
-  const { today, week, conversations } = useHomeData();
+  const { today, week, conversations, challengeCount } = useHomeData();
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -27,8 +27,9 @@ export default function HomeScreen() {
             big
             icon={<Icon name="mic" size={26} />}
             disabled={today?.talkLimitReached}
-            // TODO: go through the pre-talk "Today's challenge" screen once it exists
-            onPress={() => router.push('/talk')}
+            // "Today's challenge" first when there is one (the challenge screen
+            // also skips itself if it turns out empty while this is loading)
+            onPress={() => router.push(challengeCount === 0 ? '/talk' : '/challenge')}
           />
           {today?.talkLimitReached && (
             <Text variant="small" style={styles.limitNote}>

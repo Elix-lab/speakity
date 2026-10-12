@@ -5,6 +5,7 @@ import type { CardType, Flashcard } from '@/lib/types';
 import { borders, colors, radii, type ColorToken } from '@/theme';
 
 import { IpaBox } from './IpaBox';
+import { ListenButton } from './ListenButton';
 import { Pill } from './Pill';
 import { Sticker } from './Sticker';
 import { Text } from './Text';
@@ -19,6 +20,10 @@ type SentenceCardProps = {
   card: Flashcard;
   showIpa?: boolean;
   showWhy?: boolean;
+  /** The sentence in the user's language, under the correction. */
+  showEs?: boolean;
+  /** Shows a Listen button at the bottom. */
+  onListen?: () => void;
   /** Extra content at the bottom (e.g. a WinLine on Practice). */
   footer?: ReactNode;
 };
@@ -28,7 +33,14 @@ type SentenceCardProps = {
  * Before-you-talk, the in-talk challenge, the library). Flashcards in
  * review keep their own flip-card design.
  */
-export function SentenceCard({ card, showIpa = false, showWhy = false, footer }: SentenceCardProps) {
+export function SentenceCard({
+  card,
+  showIpa = false,
+  showWhy = false,
+  showEs = false,
+  onListen,
+  footer,
+}: SentenceCardProps) {
   const tag = CARD_TAG[card.type];
   return (
     <Sticker pop="md" radius={radii.insight} style={styles.face} containerStyle={styles.container}>
@@ -44,6 +56,11 @@ export function SentenceCard({ card, showIpa = false, showWhy = false, footer }:
       <View style={styles.better}>
         <Text variant="better">{card.better}</Text>
       </View>
+      {showEs && (
+        <Text variant="small" style={styles.es}>
+          {card.es}
+        </Text>
+      )}
       {showIpa && <IpaBox ipa={card.ipa} />}
       {showWhy && (
         <Text variant="why" style={styles.why}>
@@ -51,6 +68,7 @@ export function SentenceCard({ card, showIpa = false, showWhy = false, footer }:
         </Text>
       )}
       {footer}
+      {onListen && <ListenButton onPress={onListen} text={card.better} iconSize={20} style={styles.listen} />}
     </Sticker>
   );
 }
@@ -80,4 +98,6 @@ const styles = StyleSheet.create({
     borderColor: colors.ink,
   },
   why: { marginTop: 10 },
+  es: { marginTop: 8 },
+  listen: { marginTop: 12 },
 });

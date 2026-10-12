@@ -1,7 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { Button, Mascot, Sticker, Text } from '@/components/ui';
-import { borders, colors } from '@/theme';
+import { Button, Mascot, StatSticker, Text } from '@/components/ui';
 
 type ReviewDoneProps = {
   total: number;
@@ -15,7 +14,7 @@ export function ReviewDone({ total, mastered, learning, onBack }: ReviewDoneProp
   return (
     <>
       <View style={styles.center}>
-        <Mascot pose="recap" width={220} animation="chat" />
+        <Mascot pose="recap" width={220} />
         <Text variant="h1" style={styles.title}>
           {total ? 'Nice work!' : 'All caught up'}
         </Text>
@@ -26,8 +25,8 @@ export function ReviewDone({ total, mastered, learning, onBack }: ReviewDoneProp
         </Text>
         {total > 0 && (
           <View style={styles.stats}>
-            <Stat n={mastered} label="mastered" />
-            <Stat n={learning} label="still learning" />
+            <StatSticker n={mastered} label="mastered" />
+            <StatSticker n={learning} label="still learning" />
           </View>
         )}
       </View>
@@ -38,20 +37,6 @@ export function ReviewDone({ total, mastered, learning, onBack }: ReviewDoneProp
   );
 }
 
-/** .stat — small tilted sticker with a big number. */
-function Stat({ n, label }: { n: number; label: string }) {
-  return (
-    <Sticker pop="md" radius={14} tilt="left" containerStyle={styles.statWrap} style={styles.stat}>
-      <Text variant="stat" style={styles.text}>
-        {n}
-      </Text>
-      <Text variant="caption" style={styles.text}>
-        {label}
-      </Text>
-    </Sticker>
-  );
-}
-
 const styles = StyleSheet.create({
   // .center: flex 1, centered column, padding 0 28px, gap 10
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, gap: 10 },
@@ -59,14 +44,5 @@ const styles = StyleSheet.create({
   text: { textAlign: 'center' },
   // .stats: gap 10, margin-top 14, full width
   stats: { flexDirection: 'row', gap: 10, marginTop: 14, alignSelf: 'stretch' },
-  statWrap: { flex: 1 },
-  // .stat: radius 14, padding 12px 8px
-  stat: {
-    backgroundColor: colors.surface,
-    borderWidth: borders.default,
-    borderColor: colors.ink,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-  },
   ctaBar: { paddingTop: 12, paddingHorizontal: 20, paddingBottom: 18 }, // .cta-bar
 });

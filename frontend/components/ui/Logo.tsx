@@ -5,7 +5,7 @@ import { borders, colors } from '@/theme';
 import { Sticker } from './Sticker';
 import { Text } from './Text';
 
-const head = require('@/assets/images/mia/head.webp');
+const head = require('@/assets/images/monty/head.webp');
 
 type LogoProps = {
   /** .mark size (--s). Prototype uses 38 on Home, 30 on the pre-talk topbar. */
@@ -14,7 +14,7 @@ type LogoProps = {
 };
 
 /**
- * .logo — leaf .mark with Mia's head (no sticker outline filter here, the
+ * .logo — leaf .mark with Monty's head (no sticker outline filter here, the
  * prototype sets `filter:none` on .mark img) + the "Speakity" wordmark,
  * a single block with no trailing dot.
  */

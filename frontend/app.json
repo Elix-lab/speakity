@@ -37,10 +37,11 @@
       [
         "expo-audio",
         {
-          "microphonePermission": "Speakity records your voice so Mia can understand you and give you feedback."
+          "microphonePermission": "Speakity records your voice so Monty can understand you and give you feedback."
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

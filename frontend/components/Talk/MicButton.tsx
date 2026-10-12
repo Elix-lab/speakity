@@ -19,7 +19,7 @@ type MicButtonProps = {
 /**
  * .mic-btn — tap to start your turn, tap again to end it. Coral circle with the big 6px pop shadow;
  * the press sinks 4px (not the full 6px, per the prototype's :active).
- * Disabled (Mia speaking/thinking, paused): #D7CDA6 fill, opacity .5, no
+ * Disabled (Monty speaking/thinking, paused): #D7CDA6 fill, opacity .5, no
  * press — never hidden. Keeps its pop shadow (deliberate change from the
  * prototype, which dropped it).
  * Active (recording): held pressed in (sunk 4px, no shadow) and leaf green,

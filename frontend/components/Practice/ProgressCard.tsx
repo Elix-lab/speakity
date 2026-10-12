@@ -1,18 +1,14 @@
 import { StyleSheet, View } from 'react-native';
 
-import { Card, Mascot, Pill, Text } from '@/components/ui';
-import type { CardStats, CardStatus } from '@/lib/types';
-import { borders, colors, radii, type ColorToken } from '@/theme';
+import { CARD_STATUS, CARD_STATUS_ORDER, Card, Mascot, Pill, Text } from '@/components/ui';
+import type { CardStats } from '@/lib/types';
+import { borders, colors, radii } from '@/theme';
 
-const STATUSES: { key: CardStatus; label: string; color: ColorToken }[] = [
-  { key: 'new', label: 'New', color: 'new' }, // .seg-new
-  { key: 'learning', label: 'Learning', color: 'sea' }, // .seg-learning (--sea-soft = sea)
-  { key: 'mastered', label: 'Mastered', color: 'ok' }, // .seg-mastered
-];
+const STATUSES = CARD_STATUS_ORDER.map((key) => ({ key, ...CARD_STATUS[key] }));
 
 type ProgressCardProps = {
   stats: CardStats;
-  /** Something to review today → Mia asks (megaphone); otherwise she idles. */
+  /** Something to review today → Monty asks (megaphone); otherwise he idles. */
   hasDue: boolean;
 };
 
@@ -32,7 +28,7 @@ export function ProgressCard({ stats, hasDue }: ProgressCardProps) {
           </Text>
           <Text variant="hand">sentences mastered</Text>
         </View>
-        <Mascot pose={hasDue ? 'ask' : 'idle'} width={92} animation="idle" />
+        <Mascot pose={hasDue ? 'ask' : 'idle'} width={92} />
       </View>
 
       <View

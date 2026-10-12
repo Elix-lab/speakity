@@ -21,7 +21,8 @@ export type IconName =
   | 'pause'
   | 'eye'
   | 'eyeOff'
-  | 'sound';
+  | 'sound'
+  | 'spark';
 
 type IconProps = {
   name: IconName;
@@ -35,6 +36,7 @@ const strokeWidth: Partial<Record<IconName, number>> = {
   x: 3,
   plus: 3.2,
   play: 2.2,
+  spark: 2.2,
 };
 
 export function Icon({ name, size = 24, color = 'ink' }: IconProps) {
@@ -86,6 +88,7 @@ const paths: Record<Exclude<IconName, 'flame'>, ReactNode> = {
     </>
   ),
   plus: <Path d="M12 5v14M5 12h14" />,
+  spark: <Path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6z" />,
   play: <Path d="M7 4l13 8-13 8z" />,
   eye: (
     <>

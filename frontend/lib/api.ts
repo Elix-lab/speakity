@@ -1,14 +1,16 @@
 import {
   mockCards,
   mockConversations,
-  mockMiaLines,
+  mockMontyLines,
   mockToday,
   mockUserLines,
   mockWeek,
 } from './mockData';
+import { toLocalDay } from './format';
 import { pickDailyQueue } from './reviewQueue';
 import type {
   CardStats,
+  ConversationRecap,
   ConversationSummary,
   FocusArea,
   Flashcard,
@@ -16,6 +18,8 @@ import type {
   Rating,
   RecordedTurn,
   ReviewResult,
+  SentencePage,
+  SentenceQuery,
   TalkLine,
   TodaySummary,
   WeekStats,
@@ -109,6 +113,35 @@ export async function rateCard(cardId: string, rating: Rating): Promise<ReviewRe
   return { status: card.status, settled };
 }
 
+const SENTENCES_PAGE_SIZE = 6;
+
+/**
+ * GET /cards?status=&from=&to=&page= — "All my sentences": filtered by
+ * status and by the day the sentence was said, newest first, 6 per page.
+ */
+export async function getSentences(query: SentenceQuery): Promise<SentencePage> {
+  await delay();
+  const matches = cards
+    .filter((c) => {
+      const day = toLocalDay(new Date(c.createdAt));
+      return (
+        query.statuses.includes(c.status) &&
+        (!query.from || day >= query.from) &&
+        (!query.to || day <= query.to)
+      );
+    })
+    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+
+  const pageCount = Math.max(1, Math.ceil(matches.length / SENTENCES_PAGE_SIZE));
+  const page = Math.min(Math.max(1, query.page), pageCount);
+  return {
+    items: matches.slice((page - 1) * SENTENCES_PAGE_SIZE, page * SENTENCES_PAGE_SIZE),
+    total: matches.length,
+    page,
+    pageCount,
+  };
+}
+
 /** Today's challenge: up to 2 sentences currently in "learning". */
 export async function getChallengeCards(): Promise<Flashcard[]> {
   await delay();
@@ -117,10 +150,10 @@ export async function getChallengeCards(): Promise<Flashcard[]> {
 
 // ---- Conversation pipeline (turn-based, see CLAUDE.md) ----
 
-/** POST /conversations — opens a conversation, returns Mia's greeting. */
+/** POST /conversations — opens a conversation, returns Monty's greeting. */
 export async function startConversation(): Promise<{ id: string; greeting: string }> {
   await delay();
-  return { id: `mock-${Date.now()}`, greeting: mockMiaLines[0] };
+  return { id: `mock-${Date.now()}`, greeting: mockMontyLines[0] };
 }
 
 /**
@@ -134,11 +167,11 @@ export async function transcribeTurn(conversationId: string, turn: RecordedTurn)
   return mockUserLines[yourTurns % mockUserLines.length];
 }
 
-/** POST /conversations/:id/reply — cheap text model generates Mia's next line. */
-export async function getMiaReply(conversationId: string, history: TalkLine[]): Promise<string> {
+/** POST /conversations/:id/reply — cheap text model generates Monty's next line. */
+export async function getMontyReply(conversationId: string, history: TalkLine[]): Promise<string> {
   await delay(800);
-  const miaTurns = history.filter((l) => l.who === 'mia').length;
-  return mockMiaLines[miaTurns % mockMiaLines.length];
+  const montyTurns = history.filter((l) => l.who === 'monty').length;
+  return mockMontyLines[montyTurns % mockMontyLines.length];
 }
 
 /** POST /conversations/:id/end — triggers the end-to-end analysis. */
@@ -148,11 +181,35 @@ export async function endConversation(
   durationSec: number,
 ): Promise<void> {
   await delay();
-  console.log('[mock] endConversation', conversationId, transcript.length, 'lines', durationSec, 's');
+  endedConversations.set(conversationId, { transcript, durationSec });
+}
+
+/**
+ * GET /conversations/:id/recap — waits for the analysis started by
+ * endConversation and returns what Monty found.
+ */
+export async function getConversationRecap(conversationId: string): Promise<ConversationRecap> {
+  await delay(900);
+  const ended = endedConversations.get(conversationId);
+  const durationSec = ended?.durationSec ?? 0;
+  // mock rule: nothing you said → nothing to analyze
+  const analyzed = !!ended?.transcript.some((l) => l.who === 'you');
+  if (!analyzed) return { conversationId, durationSec, analyzed, wins: [], newCards: [] };
+  return {
+    conversationId,
+    durationSec,
+    analyzed,
+    // prototype recap: wins = today's challenge cards, new = its NEW list
+    wins: cards.filter((c) => c.status === 'learning').slice(0, 2),
+    newCards: cards.filter((c) => ['n1', 'n2', 'n3', 'n4'].includes(c.id)),
+  };
 }
 
 // mock-only: which scripted user line comes next, per conversation
 const turnCounter = new Map<string, number>();
+
+// mock-only: what endConversation received, for getConversationRecap
+const endedConversations = new Map<string, { transcript: TalkLine[]; durationSec: number }>();
 
 // ---- mock-only review state (the backend keeps this per user, per day) ----
 

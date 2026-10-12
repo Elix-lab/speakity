@@ -43,6 +43,8 @@ export const colors = {
   micDisabled: '#D7CDA6', // .mic-btn while speaking/thinking/muted
   tabInactive: '#A39B85', // .tab (inactive)
   ringTrack: 'rgba(27,27,27,.12)', // Home "Today" ring track
+  // Not in the prototype (it has no modals): backdrop behind the iOS date sheet, ink at 35%
+  scrim: 'rgba(23,25,27,.35)',
 } as const;
 
 export type ColorToken = keyof typeof colors;

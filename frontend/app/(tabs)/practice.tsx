@@ -94,8 +94,7 @@ export default function PracticeScreen() {
 
         {overview && (
           <Pressable
-            // TODO: open "All my sentences" (prototype: library screen) once it exists
-            onPress={() => console.log('[todo] open all sentences')}
+            onPress={() => router.push('/library')}
             accessibilityRole="link"
             style={styles.seeAll}>
             <Text variant="link">See all my sentences</Text>

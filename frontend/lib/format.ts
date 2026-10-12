@@ -19,3 +19,23 @@ export function relativeDay(iso: string, now = new Date()): string {
   if (days < 14) return 'Last week';
   return `${Math.floor(days / 7)} weeks ago`;
 }
+
+// ---- Calendar days as YYYY-MM-DD in the device's time zone ----
+
+const pad = (n: number) => String(n).padStart(2, '0');
+
+/** Date → "2026-10-04" (local day, not UTC). */
+export function toLocalDay(date: Date): string {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/** "2026-10-04" → Date at local midnight. */
+export function fromLocalDay(day: string): Date {
+  const [y, m, d] = day.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/** "2026-10-04" → "Oct 4, 2026" */
+export function formatDay(day: string): string {
+  return fromLocalDay(day).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}

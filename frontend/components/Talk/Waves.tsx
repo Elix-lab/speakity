@@ -24,7 +24,7 @@ for (let i = 1; i <= SAMPLES; i++) {
   curve.push(1 - easeInOut(t));
 }
 
-/** .waves — 21 ink bars; animated while Mia speaks or while you talk. */
+/** .waves — 21 ink bars; animated while Monty speaks or while you talk. */
 export function Waves({ active }: { active: boolean }) {
   // Per-bar randomness, like the prototype's inline --h / --d / --dl.
   const [bars] = useState(() =>

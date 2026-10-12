@@ -24,20 +24,6 @@ export const motion = {
   // Per bar the prototype randomizes --h 10–40px, --d .55–1.25s and a
   // negative delay 0–1s (starts mid-cycle).
   bar: { count: 21, restHeight: 7, minPeak: 10, peakRange: 30, minDur: 550, durRange: 700, maxPhase: 1000 },
-  // swapPose(): current pose stretches, squashes, then the new pose
-  // starts squashed and springs back. transform-origin 50% 100%.
-  poseSwap: {
-    stretch: { scaleX: 0.95, scaleY: 1.06, duration: 90 }, // ease-out
-    squash: { scaleX: 1.08, scaleY: 0.93, duration: 90 }, // ease-in
-    settle: { duration: 140, bezier: [0.3, 1.3, 0.6, 1] },
-  },
-  // .mic-btn — transition opacity .2s; .mia-mini — opacity .3s
+  // .mic-btn — transition opacity .2s
   micFade: { duration: 200 },
-  miniFade: { duration: 300 },
-  // mascot idle loop (.due-card .mia, .pc-mia) — 3.4s ease-in-out
-  idle: { duration: 3400 },
-  // .done-mia — chat 1s ease-in-out, 3 times
-  chat: { duration: 1000, iterations: 3 },
-  // confetti — 2.6s ease-in
-  confetti: { duration: 2600 },
 } as const;

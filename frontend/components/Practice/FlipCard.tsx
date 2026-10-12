@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
-import { CARD_TAG, Icon, IpaBox, Mascot, Pill, PressableSticker, Sticker, Text } from '@/components/ui';
+import { CARD_TAG, IpaBox, ListenButton, Mascot, Pill, Sticker, Text } from '@/components/ui';
 import type { Flashcard } from '@/lib/types';
 import { borders, colors, fonts, motion, radii, sizes } from '@/theme';
 
@@ -108,17 +108,7 @@ export function FlipCard({ card, flipped, onFlip, onListen }: FlipCardProps) {
         <Text variant="first" style={styles.first}>
           You first said: <Text style={styles.wrong}>{card.said}</Text>
         </Text>
-        <PressableSticker
-          pop="sm"
-          radius={radii.full}
-          onPress={onListen}
-          accessibilityRole="button"
-          accessibilityLabel={`Listen to ${card.better}`}
-          containerStyle={styles.audioWrap}
-          style={styles.audio}>
-          <Icon name="sound" size={22} />
-          <Text variant="pill">Listen</Text>
-        </PressableSticker>
+        <ListenButton onPress={onListen} text={card.better} style={styles.audio} />
       </Face>
     </Animated.View>
   );
@@ -184,17 +174,5 @@ const styles = StyleSheet.create({
   first: { marginTop: 8 }, // .first
   // .first s — coral tint behind the original sentence
   wrong: { backgroundColor: colors.coralTint, color: colors.ink },
-  // .audio: margin-top auto, align-self flex-start
-  audioWrap: { marginTop: 'auto', alignSelf: 'flex-start' },
-  // .audio: gap 10, sea tint, 2px border, padding 8px 16px, pill
-  audio: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: colors.seaTint,
-    borderWidth: borders.default,
-    borderColor: colors.ink,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
+  audio: { marginTop: 'auto' }, // .audio on the back face
 });

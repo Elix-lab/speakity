@@ -24,7 +24,7 @@ completas y corregidas, no palabras sueltas.
 
 ## Cómo funciona por dentro (resumen, ver CLAUDE.md para el detalle técnico)
 
-1. **Hablás con Mia** (la tortuga, nuestra IA). No es voz-a-voz en tiempo
+1. **Hablás con Monty** (la tortuga, nuestra IA). No es voz-a-voz en tiempo
    real estilo ChatGPT — es por turnos: grabás, se transcribe, te contesta
    en texto, se lee en voz alta. Se siente como una nota de voz yendo y
    viniendo, no como una llamada telefónica. Esto es una decisión de costo:
@@ -83,7 +83,7 @@ alrededor.
 
 ## Mascota
 
-Mia, una tortuga. Representa consistencia y progreso de a poco — no
+Monty, una tortuga. Representa consistencia y progreso de a poco — no
 rapidez ni perfección. Aparece de forma selectiva en la app, no en cada
 pantalla.
 

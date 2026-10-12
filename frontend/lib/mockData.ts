@@ -48,7 +48,14 @@ const card = (
   status: Flashcard['status'],
   dueInDays: number,
   win = false,
-): Flashcard => ({ ...seed, conversationId, status, win, dueAt: daysAgo(-dueInDays) });
+): Flashcard => ({
+  ...seed,
+  conversationId,
+  status,
+  win,
+  dueAt: daysAgo(-dueInDays),
+  createdAt: mockConversations.find((c) => c.id === conversationId)!.startedAt,
+});
 
 // Cards from prototype.html (OLD / NEW / MASTERED), plus a few extra
 // learning and new ones so both daily caps actually bite with the default
@@ -90,9 +97,9 @@ export const mockCards: Flashcard[] = [
   card({ id: 'p4', type: 'grammar', category: 'Prepositions', es: 'Le tengo miedo a las arañas', said: "I'm afraid from spiders", better: "I'm afraid of spiders", ipa: '/aɪm əˈfreɪd əv ˈspaɪdɚz/', why: 'After “afraid”, use “of”.' }, 'conv4', 'mastered', 8),
 ];
 
-// Talk script from prototype.html (SCRIPT). Mia's lines are her replies;
+// Talk script from prototype.html (SCRIPT). Monty's lines are his replies;
 // "you" lines stand in for what cloud STT would transcribe.
-export const mockMiaLines = [
+export const mockMontyLines = [
   'Hi Ana! What have you been up to today?',
   'Sounds like a lot! Tell me more about that.',
   'I love that. Tell me more about the beach. What do you do there?',

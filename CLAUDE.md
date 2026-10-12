@@ -60,6 +60,7 @@ frontend/
                      # compartidas por TODA la app. Nunca dupliques un
                      # componente genérico adentro de una carpeta de página.
     Home/
+    Library/
     Practice/
     Talk/
   hooks/            # useAuth, useReviewSession, useConversation
@@ -124,7 +125,7 @@ negocio (ver cálculos en el README). En su lugar:
    a autocorregir lo que la persona dijo, y necesitamos el error tal cual
    fue dicho para poder corregirlo.
 3. El texto transcrito se manda a un modelo de texto barato (no al de
-   audio) que genera la respuesta de Mia.
+   audio) que genera la respuesta de Monty.
 4. La respuesta se lee en voz alta con el motor de TTS **nativo del
    celular** (expo-speech) — acá sí es gratis y no hay ningún problema de
    precisión, porque el texto ya salió correcto del modelo, solo se está
@@ -133,14 +134,38 @@ negocio (ver cálculos en el README). En su lugar:
    propia de la tortuga + indicador de puntitos), mientras se hace el viaje
    de ida y vuelta de transcribir + generar respuesta.
 
+## Flujo al terminar una conversación
+
+Talk → **"That's a wrap!"** (`app/recap.tsx`) → **"You spoke for N min"**
+(`app/summary.tsx`). Cada paso reemplaza al anterior en la navegación, así
+que salir de cualquiera vuelve al Home, nunca a la conversación.
+
+- Las flashcards ya las crea el análisis (regla 3) y quedan en el backlog.
+  **No hay botón de "agregar"**: el "Add N sentences to my practice" del
+  prototipo NO se usa.
+- El summary termina con dos botones: **Practice now** (abre el repaso
+  normal de hoy, respetando los topes de la regla 4; las cartas nuevas
+  entran solo si caben) y **Back home**.
+- Una conversación sin contenido analizable muestra "That was a quick one"
+  en vez del recap (regla 6).
+
 ## Mascota
 
-Tortuga (Mia). Representa consistencia, paciencia, progreso de a poco. Usar
-con moderación, nunca infantilizarla de más. Prototipo visual de referencia
-(estilo "sticker"/cartoon con outline grueso, sombra offset) ya construido
-como artifact de Claude — pedirle al usuario el link si hace falta
-referencia visual exacta de colores/tipografía/animaciones de poses
-(squash & stretch al cambiar de pose).
+Monty, una tortuga (masculino: "he" en los textos en inglés). La app se
+llama Speakity; la mascota se llama Monty — no confundir los dos nombres.
+Representa consistencia, paciencia, progreso de a poco. Usar con
+moderación, nunca infantilizarlo de más.
+
+**Monty es siempre una imagen fija**: sin animaciones (idle, rebote, squash &
+stretch) ni confetti, aunque el prototipo las tenga. Cambiar de pose
+(talk/listen/think) es un cambio de imagen instantáneo.
+
+## Prototipo de referencia
+
+`frontend/design-reference/prototype.html` (estilo "sticker"/cartoon con
+outline grueso, sombra offset). Colores, tamaños, tipografía y textos se
+copian de ahí, salvo donde este archivo o una decisión del usuario diga
+otra cosa (ej.: la mascota fija, el flujo post-conversación de arriba).
 
 ## Lo que el usuario explícitamente NO quiere en el MVP
 

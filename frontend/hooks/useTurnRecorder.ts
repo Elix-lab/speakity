@@ -29,7 +29,7 @@ export function useTurnRecorder() {
 
   const finish = async () => {
     await recorder.stop();
-    // back to playback-only so Mia's voice plays at full speaker volume
+    // back to playback-only so Monty's voice plays at full speaker volume
     await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
   };
 

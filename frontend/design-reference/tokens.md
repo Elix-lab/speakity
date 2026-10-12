@@ -13,7 +13,7 @@ buscalo — no lo inventes ni lo "interpretes" visualmente a ojo.
 
 "Sticker journal": tarjetas blancas con borde negro de 2px y una sombra
 sólida offset (no blur, no alpha) — como si cada elemento fuera un sticker
-troquelado sobre papel. El mascot (Mia, la tortuga) tiene además un borde
+troquelado sobre papel. El mascot (Monty, la tortuga) tiene además un borde
 blanco + negro vía `drop-shadow` apilados, para simular el contorno
 troquelado del sticker.
 
@@ -42,7 +42,7 @@ troquelado del sticker.
 
 ```
 --display: "Baloo 2","Nunito",system-ui,-apple-system,"Segoe UI",sans-serif   /* headers, botones, números grandes */
---hand:    "Caveat","Nunito",cursive                                          /* bubbles de Mia, subtítulos "a mano" */
+--hand:    "Caveat","Nunito",cursive                                          /* bubbles de Monty, subtítulos "a mano" */
 --body:    "Nunito",system-ui,-apple-system,"Segoe UI",sans-serif             /* texto de cuerpo */
 ```
 
@@ -54,7 +54,7 @@ Tamaños clave (font-size / weight / line-height):
 - Número grande de stat (`.stat b`, `.today-n`): 28px / 700 (display font)
 - Número hero de práctica (`.pc-num`): 44px / 600, line-height 1
 - Quote en flashcard (`.quote`): 30px / 700 / 1.12
-- Bubble de Mia (`.bubble`): 19px, font-family hand, weight 700
+- Bubble de Monty (`.bubble`): 19px, font-family hand, weight 700
 - Botón (`.btn`): 17px / 700, letter-spacing -.005em; `.btn.big`: 19px
 
 ## Espaciado / layout
@@ -96,7 +96,7 @@ Varias tarjetas tienen una leve rotación "pegada a mano":
 Y un "pin" circular decorativo (círculo amarillo con borde) en la esquina
 superior-izquierda de `.win-hero` y `.practice-card`.
 
-## Mascota (Mia) — poses y animación
+## Mascota (Monty) — poses y animación
 
 Filtro de contorno sticker en cualquier imagen con `alt` (doble
 drop-shadow blanco + negro, 3px y 2px respectivamente) — así es como se
@@ -198,7 +198,7 @@ La corrección ("better") se muestra en una píldora verde-ok:
   `@expo-google-fonts/caveat`. Nunati tampoco es del sistema — Google Font
   también.
 - El filtro `drop-shadow` doble (borde blanco+negro de la mascota) no
-  existe en RN `Image`. Alternativa: exportar las imágenes de Mia ya con
+  existe en RN `Image`. Alternativa: exportar las imágenes de Monty ya con
   ese contorno "horneado" en el PNG/WebP (pedir al usuario los assets, o
   regenerarlos con el mismo proceso de recorte que se usó para las poses
   existentes), en vez de intentar replicar el filtro con CSS-in-JS.

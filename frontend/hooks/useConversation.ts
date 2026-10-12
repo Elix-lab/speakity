@@ -1,7 +1,7 @@
 import * as Speech from 'expo-speech';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { endConversation, getMiaReply, startConversation, transcribeTurn } from '@/lib/api';
+import { endConversation, getMontyReply, startConversation, transcribeTurn } from '@/lib/api';
 import type { TalkLine, TalkMode } from '@/lib/types';
 
 import { useTurnRecorder } from './useTurnRecorder';
@@ -11,7 +11,7 @@ const SPEECH_OPTIONS = { language: 'en-US', rate: 0.92 };
 
 /**
  * Turn-based voice conversation (no realtime API — see CLAUDE.md).
- * Nothing advances on its own except Mia finishing a sentence:
+ * Nothing advances on its own except Monty finishing a sentence:
  *
  *   speaking ──(TTS done)──▶ idle ──(mic tap)──▶ listening
  *       ▲                                            │ (mic tap)
@@ -34,7 +34,7 @@ export function useConversation() {
   const conversationId = useRef<string | null>(null);
   /** Mode that was interrupted by pause. */
   const resumeMode = useRef<TalkMode>('thinking');
-  /** Mia's reply that arrived while paused, spoken on resume. */
+  /** Monty's reply that arrived while paused, spoken on resume. */
   const pendingReply = useRef<string | null>(null);
   /** Bumped on every utterance so stale TTS callbacks are ignored. */
   const utterance = useRef(0);
@@ -51,28 +51,28 @@ export function useConversation() {
     setLines(linesRef.current);
   };
 
-  const miaSays = useCallback((text: string) => {
+  const montySays = useCallback((text: string) => {
     setMode('speaking');
     const id = ++utterance.current;
     Speech.speak(text, {
       ...SPEECH_OPTIONS,
-      // Mia done talking → nobody is talking; wait for the user's tap
+      // Monty done talking → nobody is talking; wait for the user's tap
       onDone: () => {
         if (alive.current && id === utterance.current && !pausedRef.current) setMode('idle');
       },
     });
   }, []);
 
-  // Open the conversation: Mia greets first.
+  // Open the conversation: Monty greets first.
   useEffect(() => {
     alive.current = true;
     let active = true; // per-run flag, so a dev double-mount doesn't greet twice
     startConversation().then(({ id, greeting }) => {
       if (!active) return;
       conversationId.current = id;
-      addLine({ who: 'mia', text: greeting });
+      addLine({ who: 'monty', text: greeting });
       if (pausedRef.current) pendingReply.current = greeting;
-      else miaSays(greeting);
+      else montySays(greeting);
     });
     return () => {
       active = false;
@@ -83,7 +83,7 @@ export function useConversation() {
     };
     // recorder is stable for the screen's lifetime
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [miaSays]);
+  }, [montySays]);
 
   // Conversation clock (stops while paused).
   useEffect(() => {
@@ -100,11 +100,11 @@ export function useConversation() {
     const said = await transcribeTurn(id, turn);
     if (!alive.current) return;
     addLine({ who: 'you', text: said });
-    const reply = await getMiaReply(id, linesRef.current);
+    const reply = await getMontyReply(id, linesRef.current);
     if (!alive.current) return;
-    addLine({ who: 'mia', text: reply });
+    addLine({ who: 'monty', text: reply });
     if (pausedRef.current) pendingReply.current = reply;
-    else miaSays(reply);
+    else montySays(reply);
   };
 
   /** Mic tap: idle → start your turn; listening → end it. Ignored otherwise. */
@@ -143,11 +143,11 @@ export function useConversation() {
     setPaused(false);
     const pending = pendingReply.current;
     pendingReply.current = null;
-    if (pending) return miaSays(pending);
+    if (pending) return montySays(pending);
     switch (resumeMode.current) {
       case 'speaking': {
-        const last = [...linesRef.current].reverse().find((l) => l.who === 'mia');
-        return last ? miaSays(last.text) : setMode('idle');
+        const last = [...linesRef.current].reverse().find((l) => l.who === 'monty');
+        return last ? montySays(last.text) : setMode('idle');
       }
       case 'thinking':
         // still waiting on the network; endTurn speaks when it lands
@@ -157,15 +157,18 @@ export function useConversation() {
     }
   };
 
-  /** End the conversation and send it for analysis. */
+  /**
+   * End the conversation and send it for analysis. Returns its id, or
+   * null if it never got started (nothing to recap).
+   */
   const end = async () => {
     alive.current = false;
     utterance.current++;
     Speech.stop();
     await recorder.cancel();
-    if (conversationId.current) {
-      await endConversation(conversationId.current, linesRef.current, seconds);
-    }
+    const id = conversationId.current;
+    if (id) await endConversation(id, linesRef.current, seconds);
+    return id;
   };
 
   return { mode, paused, lines, seconds, micDenied, onMicPress, togglePause, end };

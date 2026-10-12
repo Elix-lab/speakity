@@ -9,22 +9,22 @@ import { MicButton } from '@/components/Talk/MicButton';
 import { TalkTopBar } from '@/components/Talk/TalkTopBar';
 import { ThinkDots } from '@/components/Talk/ThinkDots';
 import { Waves } from '@/components/Talk/Waves';
-import { Button, Icon, Mascot, Text, type MiaPose } from '@/components/ui';
+import { Button, Icon, Mascot, Text, type MontyPose } from '@/components/ui';
 import { useConversation } from '@/hooks/useConversation';
 import { getChallengeCards } from '@/lib/api';
 import type { Flashcard, TalkMode } from '@/lib/types';
 import { colors } from '@/theme';
 
 const STATUS: Record<TalkMode, string> = {
-  speaking: 'Mia is speaking',
+  speaking: 'Monty is speaking',
   idle: 'Tap the mic to talk',
   listening: 'Your turn. Keep talking',
-  thinking: 'Mia is thinking',
+  thinking: 'Monty is thinking',
   muted: 'Paused',
 };
 
-/** Mia talks → talk pose · reply pending → think · otherwise (you talk, or nobody) → listen */
-const POSE: Record<Exclude<TalkMode, 'muted'>, MiaPose> = {
+/** Monty talks → talk pose · reply pending → think · otherwise (you talk, or nobody) → listen */
+const POSE: Record<Exclude<TalkMode, 'muted'>, MontyPose> = {
   speaking: 'talk',
   idle: 'listen',
   listening: 'listen',
@@ -35,9 +35,9 @@ export default function TalkScreen() {
   const { mode, paused, lines, seconds, micDenied, onMicPress, togglePause, end } = useConversation();
   const [showText, setShowText] = useState(false);
   const [challenges, setChallenges] = useState<Flashcard[]>([]);
-  // Pausing keeps whatever pose Mia had, so the pose follows the mode
+  // Pausing keeps whatever pose Monty had, so the pose follows the mode
   // except while muted (updated during render, not in an effect).
-  const [pose, setPose] = useState<MiaPose>(mode === 'muted' ? 'think' : POSE[mode]);
+  const [pose, setPose] = useState<MontyPose>(mode === 'muted' ? 'think' : POSE[mode]);
   const [poseMode, setPoseMode] = useState(mode);
   if (mode !== poseMode) {
     setPoseMode(mode);
@@ -54,9 +54,10 @@ export default function TalkScreen() {
   const barsActive = mode === 'speaking' || mode === 'listening';
 
   const onEnd = async () => {
-    await end();
-    // TODO: go to the recap screen once it exists
-    router.back();
+    const id = await end();
+    // replace: leaving the recap goes back home, not to this conversation
+    if (id) router.replace({ pathname: '/recap', params: { id } });
+    else router.back();
   };
 
   return (

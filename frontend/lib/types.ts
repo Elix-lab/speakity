@@ -29,6 +29,8 @@ export type Flashcard = {
   /** Informational flag set by the AI when used correctly later. Never touches status. */
   win: boolean;
   dueAt: string; // ISO date
+  /** When the sentence was said (its conversation's date). */
+  createdAt: string; // ISO date
 };
 
 /** What the backend answers after a rating. */
@@ -48,6 +50,22 @@ export type CardStats = Record<CardStatus, number>;
 export type FocusArea = CardStats & {
   category: string;
   total: number;
+};
+
+/** "All my sentences" filters. Dates are local calendar days, YYYY-MM-DD. */
+export type SentenceQuery = {
+  statuses: CardStatus[];
+  from: string | null;
+  to: string | null;
+  page: number;
+};
+
+export type SentencePage = {
+  items: Flashcard[];
+  /** Matches across all pages. */
+  total: number;
+  page: number;
+  pageCount: number;
 };
 
 /** Everything below the header on the Practice tab. */
@@ -93,17 +111,32 @@ export type WeekStats = {
 
 /**
  * Talk screen state:
- * - speaking:  Mia is talking (TTS) — mic disabled
+ * - speaking:  Monty is talking (TTS) — mic disabled
  * - idle:      nobody is talking — mic enabled, tap to start your turn
  * - listening: you are talking (recording) — tap the mic to end your turn
- * - thinking:  transcribing + generating Mia's reply — mic disabled
+ * - thinking:  transcribing + generating Monty's reply — mic disabled
  * - muted:     conversation paused — mic disabled
  */
 export type TalkMode = 'speaking' | 'idle' | 'listening' | 'thinking' | 'muted';
 
 export type TalkLine = {
-  who: 'mia' | 'you';
+  who: 'monty' | 'you';
   text: string;
+};
+
+/**
+ * Result of a conversation's end-to-end analysis ("That's a wrap!").
+ * A conversation too short to say anything about skips the analysis call
+ * entirely (CLAUDE.md rule 6): `analyzed` is false and both lists are empty.
+ */
+export type ConversationRecap = {
+  conversationId: string;
+  durationSec: number;
+  analyzed: boolean;
+  /** Pending cards the AI saw used correctly this time (`.win`, never `.status`). */
+  wins: Flashcard[];
+  /** New flashcards created from this conversation's mistakes — no cap. */
+  newCards: Flashcard[];
 };
 
 /** A recorded user turn, ready to upload for cloud transcription. */

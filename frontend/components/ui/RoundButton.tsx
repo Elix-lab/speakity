@@ -9,17 +9,26 @@ type RoundButtonProps = Omit<PressableProps, 'style' | 'children'> & {
   children: ReactNode;
   /** .round.on — coral fill (e.g. paused). */
   on?: boolean;
+  /** Diameter. 44 by default; 38 in the date range (.date-range .round). */
+  size?: number;
 };
 
-/** .round — 44px circle, 2px ink border, 2px pop shadow. */
-export function RoundButton({ children, on = false, ...props }: RoundButtonProps) {
+/**
+ * .round — circle, 2px ink border, 2px pop shadow. Disabled keeps its
+ * shadow and fades to .35 (.pager .round:disabled).
+ */
+export function RoundButton({ children, on = false, size = sizes.round, disabled, ...props }: RoundButtonProps) {
   return (
     <PressableSticker
       {...props}
+      disabled={disabled}
+      shadowWhenDisabled
       accessibilityRole="button"
+      accessibilityState={{ ...props.accessibilityState, disabled: !!disabled }}
       pop="sm"
-      radius={sizes.round / 2}
-      style={[styles.face, on && styles.on]}>
+      radius={size / 2}
+      containerStyle={disabled && styles.disabled}
+      style={[styles.face, { width: size, height: size }, on && styles.on]}>
       {children}
     </PressableSticker>
   );
@@ -27,8 +36,6 @@ export function RoundButton({ children, on = false, ...props }: RoundButtonProps
 
 const styles = StyleSheet.create({
   face: {
-    width: sizes.round,
-    height: sizes.round,
     borderWidth: borders.default,
     borderColor: colors.ink,
     backgroundColor: colors.surface,
@@ -36,4 +43,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   on: { backgroundColor: colors.coral },
+  disabled: { opacity: 0.35 },
 });
