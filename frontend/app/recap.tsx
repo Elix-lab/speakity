@@ -48,12 +48,12 @@ export default function RecapScreen() {
     return (
       <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
         <View style={styles.center}>
-          <Mascot pose="idle" width={180} />
+          <Mascot pose="shrug" width={200} />
           <Text variant="h1" style={styles.title}>
-            That was a quick one
+            Nothing caught my eye
           </Text>
           <Text variant="sub" style={styles.text}>
-            Not enough to go on this time. Talk a little longer and Monty will find things to work on.
+            No slip-ups to practice yet. Keep the conversation going and I’ll find something.
           </Text>
         </View>
         <View style={styles.ctaBar}>

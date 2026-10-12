@@ -29,7 +29,7 @@ export default function PracticeScreen() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <PracticeHeader streakDays={today?.streakDays ?? 0} />
 
-        {overview && <ProgressCard stats={overview.stats} hasDue={due > 0} />}
+        {overview && <ProgressCard stats={overview.stats} />}
 
         {today && (
           <View style={styles.cta}>

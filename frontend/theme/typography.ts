@@ -61,12 +61,18 @@ const em = (value: number, fontSize: number) => value * fontSize;
  * the font line box (CSS does not). The prototype tight values (1.05, 1,
  * 1.12) cut titles in half on device, so display text uses the font natural
  * line height. Adjust vertical rhythm with margins, never with lineHeight.
+ *
+ * Exception: h1. Baloo's natural line box is 1.6em (ascender 1.078 +
+ * descender .524, sized for Devanagari marks), so two-line titles look far
+ * apart. 1.25 still leaves Latin glyphs room on both sides (RN splits the
+ * cut evenly above and below); don't go near the prototype's 1.05.
  */
 export const textStyles = {
-  // h1: 34px / 800 / 1.05, letter-spacing -.01em
+  // h1: 34px / 800 / 1.05 in the prototype — 1.25 here (see above), letter-spacing -.01em
   h1: {
     fontFamily: fonts.display[800],
     fontSize: 34,
+    lineHeight: 34 * 1.25,
     letterSpacing: em(-0.01, 34),
     color: colors.ink,
   },

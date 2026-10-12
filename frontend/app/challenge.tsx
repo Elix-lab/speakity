@@ -9,7 +9,8 @@ import type { Flashcard } from '@/lib/types';
 import { colors, spacing } from '@/theme';
 
 /**
- * Pre-talk "Today's challenge": up to 2 Learning sentences to try to use
+ * Pre-talk "Today's challenge": up to 2 Learning sentences (New ones only
+ * when there's nothing in Learning, see getChallengeCards) to try to use
  * in the next conversation. Honor system — nothing checks whether you
  * used them (CLAUDE.md rule 2).
  */
@@ -20,7 +21,7 @@ export default function ChallengeScreen() {
     let active = true;
     getChallengeCards().then((c) => {
       if (!active) return;
-      // nothing in Learning → no challenge, straight to the conversation
+      // nothing in Learning or New → no challenge, straight to the conversation
       if (c.length === 0) router.replace('/talk');
       else setCards(c);
     });

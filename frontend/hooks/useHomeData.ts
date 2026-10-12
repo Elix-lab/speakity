@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 
 import { getChallengeCards, getRecentConversations, getWeekStats } from '@/lib/api';
 import type { ConversationSummary, WeekStats } from '@/lib/types';
@@ -17,11 +18,22 @@ export function useHomeData() {
     loadToday();
     getWeekStats().then((w) => active && setWeek(w));
     getRecentConversations(3).then((c) => active && setConversations(c));
-    getChallengeCards().then((c) => active && setChallengeCount(c.length));
     return () => {
       active = false;
     };
   }, [loadToday]);
+
+  // Tabs stay mounted, so refresh on every focus: a review can change which
+  // cards are Learning/New, and with none left "Start talking" skips the challenge.
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      getChallengeCards().then((c) => active && setChallengeCount(c.length));
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
 
   return { today, week, conversations, challengeCount };
 }

@@ -146,7 +146,7 @@ que salir de cualquiera vuelve al Home, nunca a la conversación.
 - El summary termina con dos botones: **Practice now** (abre el repaso
   normal de hoy, respetando los topes de la regla 4; las cartas nuevas
   entran solo si caben) y **Back home**.
-- Una conversación sin contenido analizable muestra "That was a quick one"
+- Una conversación sin contenido analizable muestra "Nothing caught my eye" (Monty con la pose shrug)
   en vez del recap (regla 6).
 
 ## Mascota

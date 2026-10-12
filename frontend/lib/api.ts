@@ -142,10 +142,19 @@ export async function getSentences(query: SentenceQuery): Promise<SentencePage> 
   };
 }
 
-/** Today's challenge: up to 2 sentences currently in "learning". */
+/**
+ * Today's challenge: up to 2 sentences, always from "learning". Only when
+ * there are none in "learning" it falls back to "new" ones (oldest first),
+ * as a last resort. Never "mastered".
+ */
 export async function getChallengeCards(): Promise<Flashcard[]> {
   await delay();
-  return cards.filter((card) => card.status === 'learning').slice(0, 2);
+  const learning = cards.filter((card) => card.status === 'learning');
+  if (learning.length) return learning.slice(0, 2);
+  return cards
+    .filter((card) => card.status === 'new')
+    .sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt))
+    .slice(0, 2);
 }
 
 // ---- Conversation pipeline (turn-based, see CLAUDE.md) ----

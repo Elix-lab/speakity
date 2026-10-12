@@ -8,12 +8,10 @@ const STATUSES = CARD_STATUS_ORDER.map((key) => ({ key, ...CARD_STATUS[key] }));
 
 type ProgressCardProps = {
   stats: CardStats;
-  /** Something to review today → Monty asks (megaphone); otherwise he idles. */
-  hasDue: boolean;
 };
 
 /** .practice-card — pinned, tilted .5deg: mastered / total + the status bar. */
-export function ProgressCard({ stats, hasDue }: ProgressCardProps) {
+export function ProgressCard({ stats }: ProgressCardProps) {
   const total = stats.new + stats.learning + stats.mastered;
   const shown = STATUSES.filter((s) => stats[s.key] > 0);
 
@@ -28,7 +26,7 @@ export function ProgressCard({ stats, hasDue }: ProgressCardProps) {
           </Text>
           <Text variant="hand">sentences mastered</Text>
         </View>
-        <Mascot pose={hasDue ? 'ask' : 'idle'} width={92} />
+        <Mascot pose="holdingCard" width={92} />
       </View>
 
       <View
