@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Card, Icon, Pill, Text } from '@/components/ui';
-import { relativeDay } from '@/lib/format';
+import { conversationDate } from '@/lib/format';
 import type { ConversationSummary } from '@/lib/types';
 import { borders, colors } from '@/theme';
 
@@ -21,10 +21,8 @@ export function RecentConversations({ conversations, onOpen }: RecentConversatio
           onPress={() => onOpen(c)}
           style={({ pressed }) => [styles.row, i > 0 && styles.divider, pressed && styles.pressed]}>
           <View style={styles.grow}>
-            <Text variant="rowTitle">{c.title}</Text>
-            <Text variant="small">
-              {relativeDay(c.startedAt)} · {c.minutes} min
-            </Text>
+            <Text variant="rowTitle">{conversationDate(c.startedAt)}</Text>
+            <Text variant="small">{c.minutes} min</Text>
             {!c.hideChips && (c.grammarCount > 0 || c.naturalCount > 0) && (
               <View style={styles.chips}>
                 {c.grammarCount > 0 && (

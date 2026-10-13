@@ -90,15 +90,23 @@ export type TodaySummary = {
   reviewedToday: number;
 };
 
+/**
+ * One row of "Recent conversations": everything spoken in one day. Several
+ * short sessions the same day add up here (minutes and corrections).
+ */
 export type ConversationSummary = {
   id: string;
-  title: string;
   startedAt: string; // ISO date
   minutes: number;
   grammarCount: number;
   naturalCount: number;
   /** Hide the grammar/natural chips on the list row (e.g. nothing new to show). */
   hideChips?: boolean;
+};
+
+/** One past conversation and the sentences its analysis found. */
+export type ConversationDetail = ConversationSummary & {
+  cards: Flashcard[];
 };
 
 export type WeekStats = {

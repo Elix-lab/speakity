@@ -10,6 +10,7 @@ import { toLocalDay } from './format';
 import { pickDailyQueue } from './reviewQueue';
 import type {
   CardStats,
+  ConversationDetail,
   ConversationRecap,
   ConversationSummary,
   FocusArea,
@@ -24,7 +25,7 @@ import type {
   TodaySummary,
   WeekStats,
 } from './types';
-import { NEW_CARDS_PER_DAY, useSettingsStore } from '@/store/useSettingsStore';
+import { NEW_CARDS_PER_DAY, useSettingsStore, type DailyReviewCap } from '@/store/useSettingsStore';
 
 /**
  * Typed calls to the backend. Mocked for now — keep these names and
@@ -48,8 +49,28 @@ export async function getWeekStats(): Promise<WeekStats> {
 /** GET /conversations?limit= — most recent first. */
 export async function getRecentConversations(limit = 3): Promise<ConversationSummary[]> {
   await delay();
-  return mockConversations.slice(0, limit);
+  return conversations.slice(0, limit).map((c) => ({ ...c, ...countTypes(cardsOf(c.id)) }));
 }
+
+/** GET /conversations/:id — a past conversation with the sentences it produced. */
+export async function getConversation(conversationId: string): Promise<ConversationDetail | null> {
+  await delay();
+  const summary = conversations.find((c) => c.id === conversationId);
+  if (!summary) return null;
+  const found = cardsOf(conversationId);
+  return { ...summary, ...countTypes(found), cards: found };
+}
+
+// mock-only: the backend stores these counts per conversation; here they
+// come from the cards so the Home chips match the detail screen
+const cardsOf = (conversationId: string) =>
+  daySeconds.has(conversationId)
+    ? recapNewCards()
+    : cards.filter((c) => c.conversationId === conversationId);
+const countTypes = (list: Flashcard[]) => ({
+  grammarCount: list.filter((c) => c.type === 'grammar').length,
+  naturalCount: list.filter((c) => c.type === 'natural').length,
+});
 
 /**
  * GET /cards/due — what's left of today's review: due cards first, then
@@ -60,6 +81,16 @@ export async function getRecentConversations(limit = 3): Promise<ConversationSum
 export async function getDueCards(): Promise<Flashcard[]> {
   await delay();
   return dailyQueue();
+}
+
+/**
+ * PATCH /me/settings — the backend applies the daily review cap to
+ * /cards/due and /me/today, from the same day on (CLAUDE.md rule 4).
+ */
+export async function updateSettings(patch: { dailyReviewCap: DailyReviewCap }): Promise<void> {
+  await delay();
+  // mock-only: dailyQueue() reads the cap from the settings store
+  useSettingsStore.getState().setDailyReviewCap(patch.dailyReviewCap);
 }
 
 /** GET /practice — progress, focus areas and recent wins for the Practice tab. */
@@ -191,6 +222,27 @@ export async function endConversation(
 ): Promise<void> {
   await delay();
   endedConversations.set(conversationId, { transcript, durationSec });
+  // nothing to analyze (rule 6) → nothing to look back at either
+  if (!hasYourTurns(transcript)) return;
+
+  // The list has one conversation per day: every session of the day adds
+  // its minutes and corrections to it (the recap stays per session).
+  const id = `day-${toLocalDay(new Date())}`;
+  const totalSec = (daySeconds.get(id) ?? 0) + durationSec;
+  daySeconds.set(id, totalSec);
+  const minutes = Math.max(1, Math.round(totalSec / 60));
+  const today = conversations.find((c) => c.id === id);
+  if (today) {
+    today.minutes = minutes;
+    return;
+  }
+  conversations.unshift({
+    id,
+    startedAt: new Date(Date.now() - durationSec * 1000).toISOString(),
+    minutes,
+    grammarCount: 0,
+    naturalCount: 0,
+  });
 }
 
 /**
@@ -201,8 +253,7 @@ export async function getConversationRecap(conversationId: string): Promise<Conv
   await delay(900);
   const ended = endedConversations.get(conversationId);
   const durationSec = ended?.durationSec ?? 0;
-  // mock rule: nothing you said → nothing to analyze
-  const analyzed = !!ended?.transcript.some((l) => l.who === 'you');
+  const analyzed = !!ended && hasYourTurns(ended.transcript);
   if (!analyzed) return { conversationId, durationSec, analyzed, wins: [], newCards: [] };
   return {
     conversationId,
@@ -210,7 +261,7 @@ export async function getConversationRecap(conversationId: string): Promise<Conv
     analyzed,
     // prototype recap: wins = today's challenge cards, new = its NEW list
     wins: cards.filter((c) => c.status === 'learning').slice(0, 2),
-    newCards: cards.filter((c) => ['n1', 'n2', 'n3', 'n4'].includes(c.id)),
+    newCards: recapNewCards(),
   };
 }
 
@@ -219,6 +270,18 @@ const turnCounter = new Map<string, number>();
 
 // mock-only: what endConversation received, for getConversationRecap
 const endedConversations = new Map<string, { transcript: TalkLine[]; durationSec: number }>();
+
+// mock rule: nothing you said → nothing to analyze
+const hasYourTurns = (transcript: TalkLine[]) => transcript.some((l) => l.who === 'you');
+
+// mock-only: every analyzed conversation "finds" the prototype's NEW list
+const recapNewCards = () => cards.filter((c) => ['n1', 'n2', 'n3', 'n4'].includes(c.id));
+
+// mock-only: the user's conversations (one per day), newest first
+const conversations: ConversationSummary[] = mockConversations.map((c) => ({ ...c }));
+
+// mock-only: seconds spoken in each day built from this app's sessions
+const daySeconds = new Map<string, number>();
 
 // ---- mock-only review state (the backend keeps this per user, per day) ----
 

@@ -39,3 +39,8 @@ export function fromLocalDay(day: string): Date {
 export function formatDay(day: string): string {
   return fromLocalDay(day).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
+
+/** ISO date → "Monday, Oct 12" — the title of a day's conversation. */
+export function conversationDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+}

@@ -63,9 +63,15 @@ frontend/
     Library/
     Practice/
     Talk/
-  hooks/            # useAuth, useReviewSession, useConversation
-  lib/              # funciones tipadas que llaman al backend / Supabase
-  store/            # estado global (Zustand)
+  hooks/            # useConversation, useReviewSession, useHomeData,
+                     # usePracticeData, useSentenceLibrary, useDailyReviewCap…
+  lib/
+    api.ts          # TODAS las llamadas al backend (hoy mockeadas, ver abajo)
+    types.ts        # tipos compartidos = contrato con el backend
+    mockData.ts     # datos de ejemplo; se borra al conectar el backend
+    reviewQueue.ts  # pickDailyQueue: aplica los dos topes de la regla 4
+    format.ts       # fechas y textos (relativeDay, conversationDate…)
+  store/            # estado global (Zustand): useTodayStore, useSettingsStore
   theme/            # tokens de color/tipografía (ver prototipo HTML de referencia)
 ```
 
@@ -94,7 +100,9 @@ frontend/
    - **Tope diario de repaso total** (nuevas + vencidas): elegible por el
      usuario entre opciones fijas (10/15/20/25), default 15. Nunca se le
      muestra al usuario más que este número en un día, sin importar cuánto
-     haya crecido la cola real detrás de escena.
+     haya crecido la cola real detrás de escena. Se cambia desde la pestaña
+     Practice (fila "Daily review: N sentences" → panel con las 4 opciones)
+     y aplica al instante, también para el mismo día.
 
 5. **Feedback inmediato por sesión, no diferido.** Cada conversación se
    analiza completa (end-to-end, no en vivo) apenas termina, y el feedback
@@ -134,6 +142,14 @@ negocio (ver cálculos en el README). En su lugar:
    propia de la tortuga + indicador de puntitos), mientras se hace el viaje
    de ida y vuelta de transcribir + generar respuesta.
 
+## Antes de hablar: "Today's challenge"
+
+"Start talking" abre primero el challenge (`app/challenge.tsx`): hasta 2
+oraciones para intentar usar en la conversación. Siempre salen de
+`learning`; solo si no hay ninguna en `learning` se usan `new` (las más
+viejas primero), como último recurso. Nunca `mastered`. Si no hay ninguna,
+el challenge no se muestra y se va directo a Talk.
+
 ## Flujo al terminar una conversación
 
 Talk → **"That's a wrap!"** (`app/recap.tsx`) → **"You spoke for N min"**
@@ -148,6 +164,51 @@ que salir de cualquiera vuelve al Home, nunca a la conversación.
   entran solo si caben) y **Back home**.
 - Una conversación sin contenido analizable muestra "Nothing caught my eye" (Monty con la pose shrug)
   en vez del recap (regla 6).
+- **En "Recent conversations", una conversación = todo lo hablado en un día.**
+  Si el usuario reparte sus minutos en varias sesiones (regla 7), se agrupan
+  en una sola entrada: minutos sumados y correcciones acumuladas. El recap y
+  el summary siguen siendo por sesión (feedback inmediato, regla 5). Las
+  sesiones sin contenido analizable no suman entrada. El título de la entrada
+  es la fecha ("Monday, Oct 12"), no un tema: un día puede tener varios.
+
+## Estado del frontend y contrato con el backend
+
+El frontend del MVP está terminado, pero **corre contra mocks**: cada
+función de `frontend/lib/api.ts` tiene arriba el endpoint que representa,
+y su cuerpo simula al backend (estado en memoria, se pierde al reiniciar).
+Al conectar el backend: mantener nombres y firmas de esas funciones y los
+tipos de `lib/types.ts`, cambiar solo los cuerpos por `fetch`, y borrar
+`mockData.ts` y todo lo marcado `mock-only`.
+
+Endpoints que el frontend espera:
+
+| Endpoint | Función en `api.ts` |
+| --- | --- |
+| `GET /me/today` | `getTodaySummary` |
+| `GET /me/week` | `getWeekStats` |
+| `PATCH /me/settings` | `updateSettings` (tope diario de repaso) |
+| `GET /practice` | `getPracticeOverview` |
+| `GET /cards/due` | `getDueCards` (ya con los dos topes de la regla 4) |
+| `POST /cards/:id/review` | `rateCard` (único camino que cambia `status`) |
+| `GET /cards?status=&from=&to=&page=` | `getSentences` (Library) |
+| `GET /cards/challenge` | `getChallengeCards` (regla de "Today's challenge") |
+| `GET /conversations?limit=` | `getRecentConversations` (una entrada por día) |
+| `GET /conversations/:id` | `getConversation` |
+| `POST /conversations` | `startConversation` |
+| `POST /conversations/:id/transcribe` | `transcribeTurn` (STT en la nube) |
+| `POST /conversations/:id/reply` | `getMontyReply` |
+| `POST /conversations/:id/end` | `endConversation` (dispara el análisis) |
+| `GET /conversations/:id/recap` | `getConversationRecap` |
+
+Ojo: `/conversations/:id` del flujo de Talk/recap es **una sesión**; la
+lista de Recent conversations y su detalle son **un día** (ver arriba). El
+backend tiene que modelar las dos cosas (sesiones agrupadas por día).
+
+Falta del lado del frontend, para cuando exista el backend:
+- Login/registro con BetterAuth (no hay pantallas de auth todavía).
+- Leer los ajustes del usuario (`GET /me/settings`) al iniciar sesión: hoy
+  el tope diario vuelve a 15 al reiniciar la app.
+- La tarjeta "This week" del Home usa datos fijos de ejemplo.
 
 ## Mascota
 

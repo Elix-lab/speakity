@@ -15,7 +15,7 @@ type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>
  */
 export function TabBar({ state, descriptors, navigation, insets }: TabBarProps) {
   return (
-    <View style={[styles.bar, { paddingBottom: 12 + insets.bottom }]}>
+    <View style={[styles.bar, { paddingBottom: insets.bottom }]}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const focused = state.index === index;
@@ -72,7 +72,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
   },
   tabPressed: { transform: [{ scale: 0.94 }] }, // .tab:active
   ico: { alignItems: 'center', justifyContent: 'center' },
@@ -81,7 +80,7 @@ const styles = StyleSheet.create({
   dot: {
     position: 'absolute',
     top: -6,
-    right: -13,
+    right: -16,
     minWidth: 20,
     height: 20,
     paddingHorizontal: 5,

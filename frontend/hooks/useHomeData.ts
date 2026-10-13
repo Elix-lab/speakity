@@ -17,17 +17,18 @@ export function useHomeData() {
     let active = true;
     loadToday();
     getWeekStats().then((w) => active && setWeek(w));
-    getRecentConversations(3).then((c) => active && setConversations(c));
     return () => {
       active = false;
     };
   }, [loadToday]);
 
-  // Tabs stay mounted, so refresh on every focus: a review can change which
-  // cards are Learning/New, and with none left "Start talking" skips the challenge.
+  // Tabs stay mounted, so refresh on every focus: a finished conversation
+  // goes on top of the list, and a review can change which cards are
+  // Learning/New (with none left "Start talking" skips the challenge).
   useFocusEffect(
     useCallback(() => {
       let active = true;
+      getRecentConversations(3).then((c) => active && setConversations(c));
       getChallengeCards().then((c) => active && setChallengeCount(c.length));
       return () => {
         active = false;

@@ -26,18 +26,10 @@ export const mockWeek: WeekStats = {
 };
 
 export const mockConversations: ConversationSummary[] = [
-  { id: 'conv1', title: 'Weekend plans', startedAt: daysAgo(1), minutes: 8, grammarCount: 3, naturalCount: 0 },
-  { id: 'conv2', title: 'Job interview', startedAt: daysAgo(3), minutes: 5, grammarCount: 0, naturalCount: 2 },
-  {
-    id: 'conv3',
-    title: 'Coffee with friends',
-    startedAt: daysAgo(5),
-    minutes: 6,
-    grammarCount: 2,
-    naturalCount: 1,
-    hideChips: true,
-  },
-  { id: 'conv4', title: 'Family dinner', startedAt: daysAgo(8), minutes: 7, grammarCount: 1, naturalCount: 2 },
+  { id: 'conv1', startedAt: daysAgo(1), minutes: 8, grammarCount: 3, naturalCount: 0 },
+  { id: 'conv2', startedAt: daysAgo(3), minutes: 5, grammarCount: 0, naturalCount: 2 },
+  { id: 'conv3', startedAt: daysAgo(5), minutes: 6, grammarCount: 2, naturalCount: 1, hideChips: true },
+  { id: 'conv4', startedAt: daysAgo(8), minutes: 7, grammarCount: 1, naturalCount: 2 },
 ];
 
 type CardSeed = Pick<Flashcard, 'id' | 'type' | 'category' | 'said' | 'better' | 'es' | 'ipa' | 'why'>;

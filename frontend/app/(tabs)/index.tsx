@@ -44,8 +44,7 @@ export default function HomeScreen() {
         {conversations && (
           <RecentConversations
             conversations={conversations}
-            // TODO: navigate to conversation detail once it exists
-            onOpen={(c) => console.log('[todo] open conversation', c.id)}
+            onOpen={(c) => router.push({ pathname: '/conversation/[id]', params: { id: c.id } })}
           />
         )}
 

@@ -1,13 +1,15 @@
 import { router, useFocusEffect } from 'expo-router';
-import { setStatusBarStyle } from 'expo-status-bar';
-import { useCallback } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { DailyCapSheet } from '@/components/Practice/DailyCapSheet';
 import { FocusAreas } from '@/components/Practice/FocusAreas';
 import { PracticeHeader } from '@/components/Practice/PracticeHeader';
 import { ProgressCard } from '@/components/Practice/ProgressCard';
 import { WinLine } from '@/components/Practice/WinLine';
 import { Button, Icon, SentenceCard, Text } from '@/components/ui';
+import { useDailyReviewCap } from '@/hooks/useDailyReviewCap';
 import { usePracticeData } from '@/hooks/usePracticeData';
 import { colors, spacing } from '@/theme';
 
@@ -15,12 +17,14 @@ export default function PracticeScreen() {
   const { today, overview } = usePracticeData();
   // Already capped by the backend: ≤5 new cards/day and ≤ the daily review cap.
   const due = today?.dueToday ?? 0;
+  const { cap, save: saveCap } = useDailyReviewCap();
+  const [capSheetOpen, setCapSheetOpen] = useState(false);
 
   // The ink header runs under the status bar → light status bar content here.
   useFocusEffect(
     useCallback(() => {
-      setStatusBarStyle('light');
-      return () => setStatusBarStyle('dark');
+      StatusBar.setStyle('light');
+      return () => StatusBar.setStyle('dark');
     }, []),
   );
 
@@ -48,6 +52,17 @@ export default function PracticeScreen() {
                 </Text>
               </>
             )}
+            {/* shown on "All done" too: raising the cap brings the review back */}
+            <Pressable
+              onPress={() => setCapSheetOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel={`Daily review: ${cap} sentences. Change`}
+              style={styles.capRow}>
+              <Text variant="small">
+                Daily review: <Text variant="small" color="ink">{cap}</Text> sentences
+              </Text>
+              <Icon name="chev" size={14} color="muted" />
+            </Pressable>
           </View>
         )}
 
@@ -102,6 +117,17 @@ export default function PracticeScreen() {
           </Pressable>
         )}
       </ScrollView>
+
+      {capSheetOpen && (
+        <DailyCapSheet
+          value={cap}
+          onClose={() => setCapSheetOpen(false)}
+          onSave={async (next) => {
+            await saveCap(next);
+            setCapSheetOpen(false);
+          }}
+        />
+      )}
     </View>
   );
 }
@@ -112,6 +138,8 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: spacing.screenX, paddingBottom: spacing.screenBottom },
   cta: { marginTop: 22 }, // .practice-cta
   note: { textAlign: 'center', marginTop: 12 }, // .limit-note
+  // centered like .see-all, under the review button
+  capRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 10, padding: 8 },
   sec: { marginTop: 24, marginBottom: 12 }, // .sec
   lede: { marginTop: 2, marginBottom: 14 }, // .pat-lede
   // .see-all: centered, gap 4, margin-top 22, padding 8

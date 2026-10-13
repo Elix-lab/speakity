@@ -11,14 +11,11 @@ import { colors, spacing } from '@/theme';
 export function PracticeHeader({ streakDays }: { streakDays: number }) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.head, { paddingTop: insets.top + 16 }]}>
+    <View style={[styles.head, { paddingTop: insets.top + 10, paddingBottom: 18 }]}>
       <View style={styles.row}>
         <Text variant="practiceTitle">Practice</Text>
         <Pill label={String(streakDays)} background="sun" icon={<Icon name="flame" size={18} />} />
       </View>
-      <Text variant="practiceLede" style={styles.lede}>
-        Your sentences, back right when you need them.
-      </Text>
     </View>
   );
 }
