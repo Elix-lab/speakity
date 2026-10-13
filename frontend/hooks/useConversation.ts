@@ -26,6 +26,8 @@ export function useConversation() {
   const [lines, setLines] = useState<TalkLine[]>([]);
   const [seconds, setSeconds] = useState(0);
   const [micDenied, setMicDenied] = useState(false);
+  /** The last turn couldn't be sent or answered; cleared on the next mic tap. */
+  const [turnFailed, setTurnFailed] = useState(false);
 
   // Refs mirror state for async callbacks (TTS onDone, network replies).
   const modeRef = useRef<TalkMode>('thinking');
@@ -67,13 +69,18 @@ export function useConversation() {
   useEffect(() => {
     alive.current = true;
     let active = true; // per-run flag, so a dev double-mount doesn't greet twice
-    startConversation().then(({ id, greeting }) => {
-      if (!active) return;
-      conversationId.current = id;
-      addLine({ who: 'monty', text: greeting });
-      if (pausedRef.current) pendingReply.current = greeting;
-      else montySays(greeting);
-    });
+    startConversation()
+      .then(({ id, greeting }) => {
+        if (!active) return;
+        conversationId.current = id;
+        addLine({ who: 'monty', text: greeting });
+        if (pausedRef.current) pendingReply.current = greeting;
+        else montySays(greeting);
+      })
+      .catch((err) => {
+        console.warn('Could not start the conversation', err);
+        if (active && !pausedRef.current) setMode('idle');
+      });
     return () => {
       active = false;
       alive.current = false;
@@ -97,14 +104,23 @@ export function useConversation() {
     if (!id) return;
     const turn = await recorder.stop();
     setMode('thinking');
-    const said = await transcribeTurn(id, turn);
-    if (!alive.current) return;
-    addLine({ who: 'you', text: said });
-    const reply = await getMontyReply(id, linesRef.current);
-    if (!alive.current) return;
-    addLine({ who: 'monty', text: reply });
-    if (pausedRef.current) pendingReply.current = reply;
-    else montySays(reply);
+    try {
+      const said = await transcribeTurn(id, turn);
+      if (!alive.current) return;
+      addLine({ who: 'you', text: said });
+      const reply = await getMontyReply(id, linesRef.current);
+      if (!alive.current) return;
+      addLine({ who: 'monty', text: reply });
+      if (pausedRef.current) pendingReply.current = reply;
+      else montySays(reply);
+    } catch (err) {
+      // network or server failure: give the mic back so the turn can be said again
+      console.warn('Turn failed', err);
+      if (!alive.current) return;
+      setTurnFailed(true);
+      if (pausedRef.current) resumeMode.current = 'idle';
+      else setMode('idle');
+    }
   };
 
   /** Mic tap: idle → start your turn; listening → end it. Ignored otherwise. */
@@ -116,6 +132,7 @@ export function useConversation() {
       if (modeRef.current === 'listening') return await endTurn();
       if (modeRef.current !== 'idle') return;
       setMicDenied(false);
+      setTurnFailed(false);
       setMode('listening');
       const ok = await recorder.start();
       if (!ok) {
@@ -171,5 +188,5 @@ export function useConversation() {
     return id;
   };
 
-  return { mode, paused, lines, seconds, micDenied, onMicPress, togglePause, end };
+  return { mode, paused, lines, seconds, micDenied, turnFailed, onMicPress, togglePause, end };
 }

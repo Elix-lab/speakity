@@ -2,4 +2,5 @@ packages:
   - frontend
   - backend
 allowBuilds:
+  esbuild: true
   unrs-resolver: true

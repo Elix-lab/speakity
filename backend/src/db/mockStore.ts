@@ -1,58 +1,86 @@
-import type { ConversationSummary, Flashcard, TodaySummary, WeekStats } from './types';
+import type { Card } from '../models/card.js';
+import type { Conversation } from '../models/conversation.js';
+import type { Review } from '../models/review.js';
+import type { User } from '../models/auth.js';
+import type { WeekStats } from '../types/api.js';
+import { daysFromNow, toLocalDay } from '../utils/dates.js';
 
-// Example data until the backend exists (values from prototype.html state).
-// Delete once lib/api.ts calls the real backend.
+/**
+ * mock-only: in-memory tables with the frontend's example data
+ * (frontend/lib/mockData.ts). Rows have the exact shape of the Drizzle
+ * models, so the controllers can move to real queries one by one.
+ * Everything resets when the server restarts. Delete this file once the
+ * controllers query Supabase.
+ */
 
-const daysAgo = (n: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString();
-};
+export const MOCK_USER_ID = 'mock-user';
 
-/** dueToday / reviewedToday are recomputed by the mock API from the cards below. */
-export const mockToday: TodaySummary = {
-  streakDays: 3,
-  minutesToday: 0,
-  minutesGoal: 5,
-  talkLimitReached: false,
-  dueToday: 0,
-  reviewedToday: 0,
-};
+const daysAgo = (n: number) => daysFromNow(-n);
 
-export const mockWeek: WeekStats = {
-  daysDone: [true, true, true, false, false, false, false],
-  minutesPerDay: [14, 9, 19, 0, 0, 0, 0],
-  conversations: 6,
-};
-
-export const mockConversations: ConversationSummary[] = [
-  { id: 'conv1', startedAt: daysAgo(1), minutes: 8, grammarCount: 3, naturalCount: 0 },
-  { id: 'conv2', startedAt: daysAgo(3), minutes: 5, grammarCount: 0, naturalCount: 2 },
-  { id: 'conv3', startedAt: daysAgo(5), minutes: 6, grammarCount: 2, naturalCount: 1, hideChips: true },
-  { id: 'conv4', startedAt: daysAgo(8), minutes: 7, grammarCount: 1, naturalCount: 2 },
+export const users: User[] = [
+  {
+    id: MOCK_USER_ID,
+    name: 'Ana',
+    email: 'ana@example.com',
+    emailVerified: true,
+    image: null,
+    createdAt: daysAgo(30),
+    updatedAt: daysAgo(30),
+    dailyReviewCap: 15,
+    minutesGoal: 5,
+    // the server's zone, like the frontend mock (toLocalDay without a zone)
+    timezone: '',
+  },
 ];
 
-type CardSeed = Pick<Flashcard, 'id' | 'type' | 'category' | 'said' | 'better' | 'es' | 'ipa' | 'why'>;
+// One session per past day, as in the frontend mock (its "conv1".."conv4").
+const seedSession = (id: string, startedDaysAgo: number, minutes: number): Conversation => {
+  const startedAt = daysAgo(startedDaysAgo);
+  return {
+    id,
+    userId: MOCK_USER_ID,
+    day: toLocalDay(startedAt),
+    status: 'analyzed',
+    startedAt,
+    endedAt: new Date(startedAt.getTime() + minutes * 60_000),
+    durationSec: minutes * 60,
+    transcript: [],
+    grammarCount: 0, // filled in from the cards below
+    naturalCount: 0,
+  };
+};
+
+export const conversations: Conversation[] = [
+  seedSession('conv1', 1, 8),
+  seedSession('conv2', 3, 5),
+  seedSession('conv3', 5, 6),
+  seedSession('conv4', 8, 7),
+];
+
+/** mock-only: days whose Recent conversations row hides its chips (frontend mock's `hideChips`). */
+export const hideChipsDays = new Set([conversations[2].day]);
+
+type CardSeed = Pick<Card, 'id' | 'type' | 'category' | 'said' | 'better' | 'es' | 'ipa' | 'why'>;
 
 const card = (
   seed: CardSeed,
   conversationId: string,
-  status: Flashcard['status'],
+  status: Card['status'],
   dueInDays: number,
   win = false,
-): Flashcard => ({
+): Card => ({
   ...seed,
+  userId: MOCK_USER_ID,
   conversationId,
   status,
   win,
-  dueAt: daysAgo(-dueInDays),
-  createdAt: mockConversations.find((c) => c.id === conversationId)!.startedAt,
+  winConversationId: null,
+  dueAt: daysFromNow(dueInDays),
+  createdAt: conversations.find((c) => c.id === conversationId)!.startedAt,
 });
 
-// Cards from prototype.html (OLD / NEW / MASTERED), plus a few extra
-// learning and new ones so both daily caps actually bite with the default
-// settings: 11 due + 8 new → only 4 new fit → 15 total (the default cap).
-export const mockCards: Flashcard[] = [
+// Same cards as the frontend mock: 11 due + 8 new → only 4 new fit → 15 total (the default cap).
+export const cards: Card[] = [
   // ---- Learning, due today (prototype OLD) ----
   card({ id: 'o1', type: 'grammar', category: 'Verb forms', es: 'Estoy de acuerdo contigo', said: "I'm agree with you", better: 'I agree with you', ipa: '/aɪ əˈɡriː wɪð juː/', why: '“Agree” is a verb by itself. Don’t add “to be”.' }, 'conv1', 'learning', -1),
   card({ id: 'o2', type: 'grammar', category: 'Quantity words', es: 'Tengo mucho trabajo por hacer', said: 'I have many work to do', better: 'I have a lot of work to do', ipa: '/aɪ hæv ə lɑːt əv wɝːk tə duː/', why: '“Work” is uncountable, so use “a lot of” or “much”.' }, 'conv1', 'learning', -1),
@@ -89,16 +117,19 @@ export const mockCards: Flashcard[] = [
   card({ id: 'p4', type: 'grammar', category: 'Prepositions', es: 'Le tengo miedo a las arañas', said: "I'm afraid from spiders", better: "I'm afraid of spiders", ipa: '/aɪm əˈfreɪd əv ˈspaɪdɚz/', why: 'After “afraid”, use “of”.' }, 'conv4', 'mastered', 8),
 ];
 
-// Talk script from prototype.html (SCRIPT). Monty's lines are his replies;
-// "you" lines stand in for what cloud STT would transcribe.
-export const mockMontyLines = [
-  'Hi Ana! What have you been up to today?',
-  'Sounds like a lot! Tell me more about that.',
-  'I love that. Tell me more about the beach. What do you do there?',
-];
+for (const session of conversations) {
+  const found = cards.filter((c) => c.conversationId === session.id);
+  session.grammarCount = found.filter((c) => c.type === 'grammar').length;
+  session.naturalCount = found.filter((c) => c.type === 'natural').length;
+}
 
-export const mockUserLines = [
-  "Honestly, it's been busy. I go to the office yesterday and I'm going to the office tomorrow too.",
-  'I would sleep in, walk on the beach with my dog. I have 25 years, so I want to enjoy it!',
-  "I've been meaning to try that new place near the pier.",
-];
+export const reviews: Review[] = [];
+
+/** mock-only: the Home streak and "This week" are fixed example data in the frontend too. */
+export const mockStreakDays = 3;
+
+export const mockWeek: WeekStats = {
+  daysDone: [true, true, true, false, false, false, false],
+  minutesPerDay: [14, 9, 19, 0, 0, 0, 0],
+  conversations: 6,
+};

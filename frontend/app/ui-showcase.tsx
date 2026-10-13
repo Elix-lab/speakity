@@ -3,7 +3,6 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Card, Pill, ProgressBar, Text } from '@/components/ui';
-import { mockToday } from '@/lib/mockData';
 import { colors, spacing } from '@/theme';
 
 /**
@@ -12,7 +11,10 @@ import { colors, spacing } from '@/theme';
  */
 export default function UiShowcase() {
   const [progress, setProgress] = useState(0.4);
-  const { streakDays, minutesToday, minutesGoal } = mockToday;
+  // sample values, only for the showcase
+  const streakDays = 3;
+  const minutesToday = 0;
+  const minutesGoal = 5;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>

@@ -1,19 +1,11 @@
-import {
-  mockCards,
-  mockConversations,
-  mockMontyLines,
-  mockToday,
-  mockUserLines,
-  mockWeek,
-} from './mockData';
-import { toLocalDay } from './format';
-import { pickDailyQueue } from './reviewQueue';
+import Constants from 'expo-constants';
+import { File } from 'expo-file-system';
+import { Platform } from 'react-native';
+
 import type {
-  CardStats,
   ConversationDetail,
   ConversationRecap,
   ConversationSummary,
-  FocusArea,
   Flashcard,
   PracticeOverview,
   Rating,
@@ -25,52 +17,72 @@ import type {
   TodaySummary,
   WeekStats,
 } from './types';
-import { NEW_CARDS_PER_DAY, useSettingsStore, type DailyReviewCap } from '@/store/useSettingsStore';
+import type { DailyReviewCap } from '@/store/useSettingsStore';
+
+/** Typed calls to the backend (backend/). */
+
+const BACKEND_PORT = 3000;
 
 /**
- * Typed calls to the backend. Mocked for now — keep these names and
- * signatures and swap the bodies for real fetch calls later.
+ * EXPO_PUBLIC_API_URL wins. Without it, in development the backend is
+ * assumed on the same machine as Metro: its LAN host works from a phone
+ * on the same network, where "localhost" would be the phone itself.
  */
+const API_URL =
+  process.env.EXPO_PUBLIC_API_URL ??
+  `http://${Constants.expoConfig?.hostUri?.split(':')[0] ?? 'localhost'}:${BACKEND_PORT}`;
 
-const delay = (ms = 250) => new Promise((resolve) => setTimeout(resolve, ms));
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const isForm = init.body instanceof FormData;
+  const res = await fetch(`${API_URL}${path}`, {
+    ...init,
+    headers: init.body && !isForm ? { 'Content-Type': 'application/json', ...init.headers } : init.headers,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new ApiError(res.status, body?.error ?? `${init.method ?? 'GET'} ${path} failed (${res.status})`);
+  }
+  // 202/204: no body
+  const text = await res.text();
+  return (text ? JSON.parse(text) : undefined) as T;
+}
+
+const post = <T>(path: string, body?: unknown) =>
+  request<T>(path, { method: 'POST', body: body === undefined ? undefined : JSON.stringify(body) });
 
 /** GET /me/today */
 export async function getTodaySummary(): Promise<TodaySummary> {
-  await delay();
-  return { ...mockToday, reviewedToday: reviewLog.reviewed, dueToday: dailyQueue().length };
+  return request('/me/today');
 }
 
 /** GET /me/week — current week, Monday first. */
 export async function getWeekStats(): Promise<WeekStats> {
-  await delay();
-  return mockWeek;
+  return request('/me/week');
 }
 
-/** GET /conversations?limit= — most recent first. */
+/** GET /conversations?limit= — one entry per day, most recent first. */
 export async function getRecentConversations(limit = 3): Promise<ConversationSummary[]> {
-  await delay();
-  return conversations.slice(0, limit).map((c) => ({ ...c, ...countTypes(cardsOf(c.id)) }));
+  return request(`/conversations?limit=${limit}`);
 }
 
-/** GET /conversations/:id — a past conversation with the sentences it produced. */
+/** GET /conversations/:id — a past day with the sentences it produced. */
 export async function getConversation(conversationId: string): Promise<ConversationDetail | null> {
-  await delay();
-  const summary = conversations.find((c) => c.id === conversationId);
-  if (!summary) return null;
-  const found = cardsOf(conversationId);
-  return { ...summary, ...countTypes(found), cards: found };
+  try {
+    return await request(`/conversations/${encodeURIComponent(conversationId)}`);
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  }
 }
-
-// mock-only: the backend stores these counts per conversation; here they
-// come from the cards so the Home chips match the detail screen
-const cardsOf = (conversationId: string) =>
-  daySeconds.has(conversationId)
-    ? recapNewCards()
-    : cards.filter((c) => c.conversationId === conversationId);
-const countTypes = (list: Flashcard[]) => ({
-  grammarCount: list.filter((c) => c.type === 'grammar').length,
-  naturalCount: list.filter((c) => c.type === 'natural').length,
-});
 
 /**
  * GET /cards/due — what's left of today's review: due cards first, then
@@ -79,8 +91,12 @@ const countTypes = (list: Flashcard[]) => ({
  * during the day.
  */
 export async function getDueCards(): Promise<Flashcard[]> {
-  await delay();
-  return dailyQueue();
+  return request('/cards/due');
+}
+
+/** GET /me/settings — read once at startup. */
+export async function getSettings(): Promise<{ dailyReviewCap: DailyReviewCap }> {
+  return request('/me/settings');
 }
 
 /**
@@ -88,34 +104,12 @@ export async function getDueCards(): Promise<Flashcard[]> {
  * /cards/due and /me/today, from the same day on (CLAUDE.md rule 4).
  */
 export async function updateSettings(patch: { dailyReviewCap: DailyReviewCap }): Promise<void> {
-  await delay();
-  // mock-only: dailyQueue() reads the cap from the settings store
-  useSettingsStore.getState().setDailyReviewCap(patch.dailyReviewCap);
+  await request('/me/settings', { method: 'PATCH', body: JSON.stringify(patch) });
 }
 
 /** GET /practice — progress, focus areas and recent wins for the Practice tab. */
 export async function getPracticeOverview(): Promise<PracticeOverview> {
-  await delay();
-  const stats: CardStats = { new: 0, learning: 0, mastered: 0 };
-  const byCategory = new Map<string, FocusArea>();
-  cards.forEach((c) => {
-    stats[c.status]++;
-    const area = byCategory.get(c.category) ?? { category: c.category, total: 0, new: 0, learning: 0, mastered: 0 };
-    area.total++;
-    area[c.status]++;
-    byCategory.set(c.category, area);
-  });
-  // most still-to-learn first, then the biggest category
-  const focusAreas = [...byCategory.values()].sort(
-    (a, b) => b.total - b.mastered - (a.total - a.mastered) || b.total - a.total,
-  );
-  const masteredToday = cards.filter((c) => reviewLog.masteredToday.has(c.id));
-  return {
-    stats,
-    focusAreas,
-    corrected: cards.filter((c) => c.win && !reviewLog.masteredToday.has(c.id)).slice(0, 3),
-    masteredToday: masteredToday.slice(0, 3),
-  };
+  return request('/practice');
 }
 
 /**
@@ -126,92 +120,67 @@ export async function getPracticeOverview(): Promise<PracticeOverview> {
  * - second look → stays Learning, done for today, whatever the rating.
  */
 export async function rateCard(cardId: string, rating: Rating): Promise<ReviewResult> {
-  await delay();
-  const card = cards.find((c) => c.id === cardId);
-  if (!card) throw new Error(`Unknown card ${cardId}`);
-
-  const looks = (reviewLog.looks.get(cardId) ?? 0) + 1;
-  reviewLog.looks.set(cardId, looks);
-  if (card.status === 'new') reviewLog.newActivated++;
-
-  const settled = looks > 1 || rating === 'easy';
-  card.status = looks === 1 && rating === 'easy' ? 'mastered' : 'learning';
-  if (settled) {
-    reviewLog.reviewed++;
-    if (card.status === 'mastered') reviewLog.masteredToday.add(cardId);
-    card.dueAt = inDays(INTERVAL_DAYS[rating]);
-  }
-  return { status: card.status, settled };
+  return post(`/cards/${encodeURIComponent(cardId)}/review`, { rating });
 }
-
-const SENTENCES_PAGE_SIZE = 6;
 
 /**
  * GET /cards?status=&from=&to=&page= — "All my sentences": filtered by
  * status and by the day the sentence was said, newest first, 6 per page.
  */
 export async function getSentences(query: SentenceQuery): Promise<SentencePage> {
-  await delay();
-  const matches = cards
-    .filter((c) => {
-      const day = toLocalDay(new Date(c.createdAt));
-      return (
-        query.statuses.includes(c.status) &&
-        (!query.from || day >= query.from) &&
-        (!query.to || day <= query.to)
-      );
-    })
-    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-
-  const pageCount = Math.max(1, Math.ceil(matches.length / SENTENCES_PAGE_SIZE));
-  const page = Math.min(Math.max(1, query.page), pageCount);
-  return {
-    items: matches.slice((page - 1) * SENTENCES_PAGE_SIZE, page * SENTENCES_PAGE_SIZE),
-    total: matches.length,
-    page,
-    pageCount,
-  };
+  const params = new URLSearchParams({ status: query.statuses.join(','), page: String(query.page) });
+  if (query.from) params.set('from', query.from);
+  if (query.to) params.set('to', query.to);
+  return request(`/cards?${params}`);
 }
 
 /**
- * Today's challenge: up to 2 sentences, always from "learning". Only when
- * there are none in "learning" it falls back to "new" ones (oldest first),
- * as a last resort. Never "mastered".
+ * GET /cards/challenge — Today's challenge: up to 2 sentences, always from
+ * "learning". Only when there are none in "learning" it falls back to
+ * "new" ones (oldest first), as a last resort. Never "mastered".
  */
 export async function getChallengeCards(): Promise<Flashcard[]> {
-  await delay();
-  const learning = cards.filter((card) => card.status === 'learning');
-  if (learning.length) return learning.slice(0, 2);
-  return cards
-    .filter((card) => card.status === 'new')
-    .sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt))
-    .slice(0, 2);
+  return request('/cards/challenge');
 }
 
 // ---- Conversation pipeline (turn-based, see CLAUDE.md) ----
 
 /** POST /conversations — opens a conversation, returns Monty's greeting. */
 export async function startConversation(): Promise<{ id: string; greeting: string }> {
-  await delay();
-  return { id: `mock-${Date.now()}`, greeting: mockMontyLines[0] };
+  return post('/conversations');
 }
 
 /**
- * POST /conversations/:id/transcribe — cloud STT of one recorded turn.
- * Never device STT: it autocorrects, and we need the mistakes as said.
+ * POST /conversations/:id/transcribe — cloud STT of one recorded turn,
+ * uploaded as multipart field "audio". Never device STT: it autocorrects,
+ * and we need the mistakes as said.
  */
 export async function transcribeTurn(conversationId: string, turn: RecordedTurn): Promise<string> {
-  await delay(700);
-  const yourTurns = turnCounter.get(conversationId) ?? 0;
-  turnCounter.set(conversationId, yourTurns + 1);
-  return mockUserLines[yourTurns % mockUserLines.length];
+  if (!turn.uri) throw new Error('No recording to transcribe');
+  const form = new FormData();
+  if (Platform.OS === 'web') {
+    // the web recorder gives a blob: URL
+    const blob = await (await fetch(turn.uri)).blob();
+    form.append('audio', blob, 'turn.webm');
+  } else {
+    // The global fetch is expo/fetch, which rejects React Native's
+    // { uri, name, type } parts; a File (a Blob) works. Its name keeps the
+    // recording's extension (.m4a), which tells STT the format.
+    form.append('audio', new File(turn.uri));
+  }
+  const { text } = await request<{ text: string }>(
+    `/conversations/${encodeURIComponent(conversationId)}/transcribe`,
+    { method: 'POST', body: form },
+  );
+  return text;
 }
 
 /** POST /conversations/:id/reply — cheap text model generates Monty's next line. */
 export async function getMontyReply(conversationId: string, history: TalkLine[]): Promise<string> {
-  await delay(800);
-  const montyTurns = history.filter((l) => l.who === 'monty').length;
-  return mockMontyLines[montyTurns % mockMontyLines.length];
+  const { text } = await post<{ text: string }>(`/conversations/${encodeURIComponent(conversationId)}/reply`, {
+    history,
+  });
+  return text;
 }
 
 /** POST /conversations/:id/end — triggers the end-to-end analysis. */
@@ -220,29 +189,7 @@ export async function endConversation(
   transcript: TalkLine[],
   durationSec: number,
 ): Promise<void> {
-  await delay();
-  endedConversations.set(conversationId, { transcript, durationSec });
-  // nothing to analyze (rule 6) → nothing to look back at either
-  if (!hasYourTurns(transcript)) return;
-
-  // The list has one conversation per day: every session of the day adds
-  // its minutes and corrections to it (the recap stays per session).
-  const id = `day-${toLocalDay(new Date())}`;
-  const totalSec = (daySeconds.get(id) ?? 0) + durationSec;
-  daySeconds.set(id, totalSec);
-  const minutes = Math.max(1, Math.round(totalSec / 60));
-  const today = conversations.find((c) => c.id === id);
-  if (today) {
-    today.minutes = minutes;
-    return;
-  }
-  conversations.unshift({
-    id,
-    startedAt: new Date(Date.now() - durationSec * 1000).toISOString(),
-    minutes,
-    grammarCount: 0,
-    naturalCount: 0,
-  });
+  await post(`/conversations/${encodeURIComponent(conversationId)}/end`, { transcript, durationSec });
 }
 
 /**
@@ -250,69 +197,5 @@ export async function endConversation(
  * endConversation and returns what Monty found.
  */
 export async function getConversationRecap(conversationId: string): Promise<ConversationRecap> {
-  await delay(900);
-  const ended = endedConversations.get(conversationId);
-  const durationSec = ended?.durationSec ?? 0;
-  const analyzed = !!ended && hasYourTurns(ended.transcript);
-  if (!analyzed) return { conversationId, durationSec, analyzed, wins: [], newCards: [] };
-  return {
-    conversationId,
-    durationSec,
-    analyzed,
-    // prototype recap: wins = today's challenge cards, new = its NEW list
-    wins: cards.filter((c) => c.status === 'learning').slice(0, 2),
-    newCards: recapNewCards(),
-  };
-}
-
-// mock-only: which scripted user line comes next, per conversation
-const turnCounter = new Map<string, number>();
-
-// mock-only: what endConversation received, for getConversationRecap
-const endedConversations = new Map<string, { transcript: TalkLine[]; durationSec: number }>();
-
-// mock rule: nothing you said → nothing to analyze
-const hasYourTurns = (transcript: TalkLine[]) => transcript.some((l) => l.who === 'you');
-
-// mock-only: every analyzed conversation "finds" the prototype's NEW list
-const recapNewCards = () => cards.filter((c) => ['n1', 'n2', 'n3', 'n4'].includes(c.id));
-
-// mock-only: the user's conversations (one per day), newest first
-const conversations: ConversationSummary[] = mockConversations.map((c) => ({ ...c }));
-
-// mock-only: seconds spoken in each day built from this app's sessions
-const daySeconds = new Map<string, number>();
-
-// ---- mock-only review state (the backend keeps this per user, per day) ----
-
-const cards = mockCards.map((c) => ({ ...c }));
-
-const reviewLog = {
-  /** Cards settled today — they count against the daily review cap. */
-  reviewed: 0,
-  /** New cards rated for the first time today — they count against the 5/day cap. */
-  newActivated: 0,
-  /** Ratings per card today, to tell a first look from the second. */
-  looks: new Map<string, number>(),
-  /** Cards rated into Mastered today (Practice's "Mastered" section). */
-  masteredToday: new Set<string>(),
-};
-
-// Settled cards come back no sooner than tomorrow ("Again" = 10m is the
-// in-session second look, already handled by `settled: false`).
-const INTERVAL_DAYS: Record<Rating, number> = { again: 1, hard: 1, good: 3, easy: 6 };
-
-const inDays = (n: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() + n);
-  return d.toISOString();
-};
-
-/** The real backend knows the user's settings; the mock reads them from the store. */
-function dailyQueue() {
-  const { dailyReviewCap } = useSettingsStore.getState();
-  return pickDailyQueue(cards, {
-    total: dailyReviewCap - reviewLog.reviewed,
-    new: NEW_CARDS_PER_DAY - reviewLog.newActivated,
-  });
+  return request(`/conversations/${encodeURIComponent(conversationId)}/recap`);
 }

@@ -66,9 +66,8 @@ frontend/
   hooks/            # useConversation, useReviewSession, useHomeData,
                      # usePracticeData, useSentenceLibrary, useDailyReviewCap…
   lib/
-    api.ts          # TODAS las llamadas al backend (hoy mockeadas, ver abajo)
+    api.ts          # TODAS las llamadas al backend (ver abajo)
     types.ts        # tipos compartidos = contrato con el backend
-    mockData.ts     # datos de ejemplo; se borra al conectar el backend
     reviewQueue.ts  # pickDailyQueue: aplica los dos topes de la regla 4
     format.ts       # fechas y textos (relativeDay, conversationDate…)
   store/            # estado global (Zustand): useTodayStore, useSettingsStore
@@ -173,42 +172,50 @@ que salir de cualquiera vuelve al Home, nunca a la conversación.
 
 ## Estado del frontend y contrato con el backend
 
-El frontend del MVP está terminado, pero **corre contra mocks**: cada
-función de `frontend/lib/api.ts` tiene arriba el endpoint que representa,
-y su cuerpo simula al backend (estado en memoria, se pierde al reiniciar).
-Al conectar el backend: mantener nombres y firmas de esas funciones y los
-tipos de `lib/types.ts`, cambiar solo los cuerpos por `fetch`, y borrar
-`mockData.ts` y todo lo marcado `mock-only`.
+La app habla con el backend real (`backend/`): cada función de
+`frontend/lib/api.ts` tiene arriba el endpoint que llama, y sus nombres y
+firmas, junto con los tipos de `lib/types.ts`, son el contrato
+(`backend/src/types/api.ts` es su copia: si cambia uno, cambia el otro).
+URL del backend: `EXPO_PUBLIC_API_URL`, o en desarrollo la IP de la
+máquina de Metro en el puerto 3000 (ver `frontend/.env.example`).
 
-Endpoints que el frontend espera:
+El backend todavía responde con datos de ejemplo en memoria
+(`backend/src/db/mockStore.ts`, se pierden al reiniciar), todas las
+requests son un usuario de ejemplo (`mockUser`), y `services/openai.ts` son
+stubs. Los schemas de Drizzle ya están en `backend/src/models/`.
 
 | Endpoint | Función en `api.ts` |
 | --- | --- |
 | `GET /me/today` | `getTodaySummary` |
 | `GET /me/week` | `getWeekStats` |
+| `GET /me/settings` | `getSettings` (al iniciar la app, en `app/_layout.tsx`) |
 | `PATCH /me/settings` | `updateSettings` (tope diario de repaso) |
 | `GET /practice` | `getPracticeOverview` |
 | `GET /cards/due` | `getDueCards` (ya con los dos topes de la regla 4) |
 | `POST /cards/:id/review` | `rateCard` (único camino que cambia `status`) |
-| `GET /cards?status=&from=&to=&page=` | `getSentences` (Library) |
+| `GET /cards?status=&from=&to=&page=` | `getSentences` (Library; `status` separado por comas) |
 | `GET /cards/challenge` | `getChallengeCards` (regla de "Today's challenge") |
 | `GET /conversations?limit=` | `getRecentConversations` (una entrada por día) |
-| `GET /conversations/:id` | `getConversation` |
+| `GET /conversations/:id` | `getConversation` (`:id` = el día, `YYYY-MM-DD`) |
 | `POST /conversations` | `startConversation` |
-| `POST /conversations/:id/transcribe` | `transcribeTurn` (STT en la nube) |
-| `POST /conversations/:id/reply` | `getMontyReply` |
-| `POST /conversations/:id/end` | `endConversation` (dispara el análisis) |
-| `GET /conversations/:id/recap` | `getConversationRecap` |
+| `POST /conversations/:id/transcribe` | `transcribeTurn` (STT en la nube; multipart, campo `audio` → `{ text }`) |
+| `POST /conversations/:id/reply` | `getMontyReply` (`{ history }` → `{ text }`) |
+| `POST /conversations/:id/end` | `endConversation` (`{ transcript, durationSec }`, dispara el análisis) |
+| `GET /conversations/:id/recap` | `getConversationRecap` (espera al análisis) |
 
 Ojo: `/conversations/:id` del flujo de Talk/recap es **una sesión**; la
 lista de Recent conversations y su detalle son **un día** (ver arriba). El
-backend tiene que modelar las dos cosas (sesiones agrupadas por día).
+backend modela las dos cosas: sesiones (`conversations`) con su `day`,
+agrupadas por día.
 
-Falta del lado del frontend, para cuando exista el backend:
-- Login/registro con BetterAuth (no hay pantallas de auth todavía).
-- Leer los ajustes del usuario (`GET /me/settings`) al iniciar sesión: hoy
-  el tope diario vuelve a 15 al reiniciar la app.
-- La tarjeta "This week" del Home usa datos fijos de ejemplo.
+Pendiente:
+- Persistir en Supabase (controllers → queries de Drizzle) y borrar `mockStore.ts`.
+- Login/registro con BetterAuth (no hay pantallas de auth todavía); después
+  cambiar `mockUser` por `requireAuth` en `backend/src/routes/index.ts`.
+- OpenAI real en `services/openai.ts`.
+- La tarjeta "This week" y la racha del Home usan datos fijos de ejemplo.
+- Manejo de errores de red en las pantallas (hoy solo Talk se recupera;
+  las demás quedan cargando si el backend no responde).
 
 ## Mascota
 

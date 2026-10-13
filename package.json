@@ -4,7 +4,9 @@
   "packageManager": "pnpm@11.1.2",
   "scripts": {
     "frontend": "pnpm --filter ./frontend",
+    "backend": "pnpm --filter ./backend",
     "start": "pnpm --filter ./frontend start",
+    "dev:backend": "pnpm --filter ./backend dev",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint"
   }

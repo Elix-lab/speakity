@@ -32,7 +32,8 @@ const POSE: Record<Exclude<TalkMode, 'muted'>, MontyPose> = {
 };
 
 export default function TalkScreen() {
-  const { mode, paused, lines, seconds, micDenied, onMicPress, togglePause, end } = useConversation();
+  const { mode, paused, lines, seconds, micDenied, turnFailed, onMicPress, togglePause, end } =
+    useConversation();
   const [showText, setShowText] = useState(false);
   const [challenges, setChallenges] = useState<Flashcard[]>([]);
   // Pausing keeps whatever pose Monty had, so the pose follows the mode
@@ -89,7 +90,11 @@ export default function TalkScreen() {
             adjustsFontSizeToFit
             accessibilityRole="text"
             accessibilityLiveRegion="polite">
-            {micDenied && mode === 'idle' ? 'Allow mic access in Settings' : STATUS[mode]}
+            {mode === 'idle' && micDenied
+              ? 'Allow mic access in Settings'
+              : mode === 'idle' && turnFailed
+                ? "Couldn't catch that. Try again"
+                : STATUS[mode]}
           </Text>
           {mode === 'thinking' ? <ThinkDots /> : <Waves active={barsActive} />}
           <View style={styles.micWrap}>
